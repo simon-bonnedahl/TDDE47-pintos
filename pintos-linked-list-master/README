@@ -1,0 +1,2 @@
+Compile using:
+gcc list.c main.c -o linked_list
