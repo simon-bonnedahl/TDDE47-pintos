@@ -29,9 +29,9 @@ void prepend(struct node *root, int value)
 {
     struct node *newNode = (struct node *)malloc(sizeof(struct node));
     newNode->value = value;
-    newNode->next = root;
+    newNode->next = root->next;
 
-    root = newNode;
+    root->next = newNode;
 }
 
 void print(struct node *root)
@@ -65,12 +65,13 @@ int main(int argc, char **argv)
     root.value -= 1;
     root.next = NULL;
 
-    append(&root, 1);
-    append(&root, 2);
-    append(&root, 3);
-    append(&root, 4);
-    append(&root, 5);
-    prepend(&root, 0);
+    append(&root, 10);
+    append(&root, 9);
+    append(&root, 8);
+    append(&root, 7);
+    append(&root, 6);
+    prepend(&root, 20);
     print(&root);
-    clear(&root);
+
+    print(&root);
 }
