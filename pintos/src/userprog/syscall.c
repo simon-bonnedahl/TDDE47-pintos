@@ -25,6 +25,7 @@ syscall_handler(struct intr_frame *f UNUSED)
     int fileDescriptor = *(int *)(f->esp + 4);
     const void *buffer = *(const void **)(f->esp + 8);
     unsigned size = *(unsigned *)(f->esp + 12);
+    // ASSERT?
 
     if (fd < 0 || buffer == NULL || size < 0)
     {
@@ -36,6 +37,7 @@ syscall_handler(struct intr_frame *f UNUSED)
 
     break;
   case SYS_READ:
+
     break;
   case SYS_HALT:
     break;
