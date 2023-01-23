@@ -1,11 +1,7 @@
-
+#include "linkedList.h"
 #include <stdio.h>
 #include <stdlib.h>
-struct node
-{
-    int value;
-    struct node *next;
-};
+
 
 void append(struct node *root, int value)
 {
@@ -36,13 +32,14 @@ void prepend(struct node *root, int value)
 
 void print(struct node *root)
 {
+    printf("[ ");
     struct node *current = root; // create a pointer to the root node
-    while (current != NULL)
-    {                                   // while the pointer is not NULL
-        printf("%d, ", current->value); // print the value of the node
-        current = current->next;        // move the pointer to the next node
+    while (current->next != NULL)
+    {                                         // while the pointer is not NULL
+        printf("%d, ", current->next->value); // print the value of the node
+        current = current->next;              // move the pointer to the next node
     }
-    printf("%d ", root->value);
+    printf("]");
     printf("\n");
 }
 
@@ -65,6 +62,7 @@ int main(int argc, char **argv)
     root.value -= 1;
     root.next = NULL;
 
+    printf("First list: ");
     append(&root, 10);
     append(&root, 9);
     append(&root, 8);
@@ -72,6 +70,16 @@ int main(int argc, char **argv)
     append(&root, 6);
     prepend(&root, 20);
     print(&root);
+    clear(&root);
 
+    printf("Second list: ");
+    append(&root, 10);
+    append(&root, 9);
+    append(&root, 8);
+    prepend(&root, 20);
+    append(&root, 7);
+    append(&root, 6);
+    prepend(&root, 19);
     print(&root);
+    clear(&root);
 }
