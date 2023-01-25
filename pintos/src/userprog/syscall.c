@@ -5,6 +5,15 @@
 #include <string.h>
 
 #include "syscall.h"
+#include "syscall-nr.h"
+#include "threads/interrupt.h"
+#include "threads/vaddr.h"
+#include "threads/synch.h"
+#include "threads/malloc.h"
+#include "devices/input.h"
+#include "userprog/process.h"
+#include "userprog/pagedir.h"
+
 static void syscall_handler (struct intr_frame *);
 
 void syscall_init(void)
@@ -17,51 +26,54 @@ syscall_handler(struct intr_frame *f UNUSED)
 {
 
   //get the system call number
-  int syscall_num = *(f->esp);
+  int syscall_num = *(int*)(f->esp);
+  int status;
+  int fileDescriptor;
+  int fileSize;
+  char* fileName;
+  char* buffer;
 
-  switch(syscall_num){
+
+  switch (syscall_num) {
 
     case SYS_HALT:
       halt();
       break;
-    case SYS_WRITE:
-      printf ("system call!\n");
-      thread_exit ();
-      break;
+    
     case SYS_EXIT:
+      status = *(int*)(f->esp + 4);
+      exit(status);
+      break;   
+    case SYS_WRITE:
       printf ("system call!\n");
       thread_exit ();
       break;
     case SYS_CREATE:
       // 2 arguments
-      int fileDescriptor = *(f->esp + 4);
-      int fileSize = *(f->esp + 8);
-      //validate the arguments  
+      fileDescriptor = *(int*)(f->esp + 4);
+      fileSize = *(int*)(f->esp + 8);
       ASSERT(fileDescriptor != NULL);
       ASSERT(fileSize != NULL);
       f->eax = create(fileDescriptor, fileSize);
       break;
     case SYS_OPEN:
       // 1 argument
-      int fileName = *(f->esp + 4);
-      //validate the arguments
+      fileName = *(int*)(f->esp + 4);
       ASSERT(fileName != NULL);
-      int fileDescriptor = open(fileName);
+      fileDescriptor = open(fileName);
       break;
     case SYS_CLOSE:
       // 1 argument
-      int fileDescriptor = *(f->esp + 4);
-      //validate the arguments
+      fileDescriptor = *(int*)(f->esp + 4);
       ASSERT(fileDescriptor != NULL);
-      f->eax = close(fileDescriptor);
+      close(fileDescriptor);
       break;
 
     case SYS_READ:
       // 3 arguments
-      int fileDescriptor = *(f->esp + 4);
-      int buffer = *(f->esp + 8);
-      int fileSize = *(f->esp + 12);
-      //validate the arguments
+      fileDescriptor = *(int*)(f->esp + 4);
+      buffer = *(char*)(f->esp + 8);
+      fileSize = *(int*)(f->esp + 12);
       ASSERT(fileDescriptor != NULL);
       ASSERT(buffer != NULL);
       ASSERT(fileSize != NULL);
@@ -79,8 +91,15 @@ void halt(void){
 }
 
 void exit(int status){
-  thread_current()->exit_status = status;
+  thread_current()->status = status;
+  //close all the files in thread_current()->open_files
+  struct files* open_files = thread_current()->open_files;
+  for(int i = 2; i < OPEN_FILES; i++){
+    close(i);
+  }
+
   printf("%s: exit(%d)", thread_current()->name, status);
+  thread_exit();
   }
 
 
@@ -90,21 +109,27 @@ bool create(const char *file, unsigned initial_size){
 
 }
 
-int open(const char *file){
+int open(const char *filename){
 
   //open the file
-  struct file = filesys_open(file);
-  if(file == NULL){
+  struct file* open_file = filesys_open(filename);
+  if(open_file == NULL){
     return -1;
   }
-  return file->fd;
+  OPEN_FILES++;
+  return open_file->fd;
 
 }
 
 void close(int fd){
   //close the file
+  // get the current thread
+  struct thread *t = thread_current();
+  struct files* open_files = t->open_files;
+  open_files->files[fd] = NULL;
 
- file_close(fd);
+  
+
 }
 
 int read(int fd, void *buffer, unsigned size){
