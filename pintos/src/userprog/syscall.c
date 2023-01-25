@@ -14,7 +14,6 @@
 #include "userprog/process.h"
 #include "userprog/pagedir.h"
 
-static void syscall_handler (struct intr_frame *);
 
 void syscall_init(void)
 {
@@ -45,6 +44,7 @@ syscall_handler(struct intr_frame *f UNUSED)
       exit(status);
       break;   
     case SYS_WRITE:
+
       printf ("system call!\n");
       thread_exit ();
       break;
@@ -67,6 +67,7 @@ syscall_handler(struct intr_frame *f UNUSED)
       fileDescriptor = *(int*)(f->esp + 4);
       ASSERT(fileDescriptor != NULL);
       close(fileDescriptor);
+
       break;
 
     case SYS_READ:
@@ -79,6 +80,7 @@ syscall_handler(struct intr_frame *f UNUSED)
       ASSERT(fileSize != NULL);
       f->eax = read(fileDescriptor, buffer, fileSize);
       break;
+
   }
   printf ("system call!\n");
   thread_exit ();
@@ -86,22 +88,24 @@ syscall_handler(struct intr_frame *f UNUSED)
 
 //define all the system calls here from the header
 
+    struct file* open_files[128];         //Lab 1
+
 void halt(void){
-  shutdown_power_off();
+  power_off();
 }
 
 void exit(int status){
   thread_current()->status = status;
   //close all the files in thread_current()->open_files
-  struct files* open_files = thread_current()->open_files;
+  struct file* open_files = thread_current()->open_files;
   for(int i = 2; i < OPEN_FILES; i++){
     close(i);
   }
 
   printf("%s: exit(%d)", thread_current()->name, status);
   thread_exit();
-  }
 
+}
 
 bool create(const char *file, unsigned initial_size){
   //create a file
@@ -109,25 +113,28 @@ bool create(const char *file, unsigned initial_size){
 
 }
 
-int open(const char *filename){
+int open(const char* filename){
 
   //open the file
   struct file* open_file = filesys_open(filename);
+  open_files[OPEN_FILES] = open_file;
   if(open_file == NULL){
     return -1;
   }
-  OPEN_FILES++;
-  return open_file->fd;
+  return OPEN_FILES++;
 
 }
 
 void close(int fd){
-  //close the file
-  // get the current thread
-  struct thread *t = thread_current();
-  struct files* open_files = t->open_files;
-  open_files->files[fd] = NULL;
 
+
+ file_close(thread_current()->open_files[fd]);
+  thread_current()->open_files[fd]= NULL;
+  OPEN_FILES--;
+  
+ 
+  //close the file
+  
   
 
 }
@@ -140,23 +147,23 @@ int read(int fd, void *buffer, unsigned size){
       if(c == '\0'){
         break;
       }
-      buffer[len] = c;
+      //buffer[len] = c;
       len++;
     }
     return len;
   }else{
-    struct file_desc *fd = get_file_desc(fd);
-    file_read(fd, buffer, size);
+    //struct file_desc *fd = get_file_desc(fd);
+    //file_read(fd, buffer, size);
   }
 }
 
-void write(int fd, const void *buffer, unsigned size){
+int write(int fd, const void *buffer, unsigned size){
   if(fd == 1){
     putbuf(buffer, size);
   }
+  return 0;
 }
-
-struct file_desc * get_file_desc(int fd){
+/*struct file_desc * get_file_desc(int fd){
   struct thread *t = thread_current();
   struct list_elem *e;
   for(e = list_begin(&t->file_desc_list); e != list_end(&t->file_desc_list); e = list_next(e)){
@@ -168,3 +175,4 @@ struct file_desc * get_file_desc(int fd){
   return NULL;
 }
 
+*/

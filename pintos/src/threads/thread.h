@@ -90,8 +90,10 @@ struct thread
     int priority;                       /* Priority. */
 
     /* Shared between thread.c and synch.c. */
+
     struct list_elem elem;              /* List element. */
-    struct file* open_files[128];  
+
+    struct file* open_files[128];         //Lab 1
 
 #ifdef USERPROG
     /* Owned by userprog/process.c. */
