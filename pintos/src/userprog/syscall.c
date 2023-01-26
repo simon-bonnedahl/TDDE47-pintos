@@ -12,8 +12,21 @@
 #include "threads/malloc.h"
 #include "devices/input.h"
 #include "userprog/process.h"
+
+
+/*pintos --qemu -p ../../examples/lab1test2 -a test2 -- -q*/
+/*pintos --qemu -p ../../examples/lab1test2 -a test2 -- -q run test2*/
+/*pintos --qemu -- rm test2*/
 #include "userprog/pagedir.h"
 
+static void syscall_handler (struct intr_frame *);
+int OPEN_FILES = 2;
+
+struct fd_elem{
+  int fd;
+  struct file * file;
+  struct list_elem elem;
+};  
 
 void syscall_init(void)
 {
@@ -24,16 +37,20 @@ static void
 syscall_handler(struct intr_frame *f UNUSED)
 {
 
-  //get the system call number
-  int syscall_num = *(int*)(f->esp);
+  int * stack_pointer = f->esp;
+  int syscall = *stack_pointer;
+
+  hex_dump(stack_pointer, stack_pointer, 128, true);
+
   int status;
   int fileDescriptor;
   int fileSize;
   char* fileName;
   char* buffer;
+  
 
 
-  switch (syscall_num) {
+  switch (syscall) {
 
     case SYS_HALT:
       halt();
@@ -44,9 +61,11 @@ syscall_handler(struct intr_frame *f UNUSED)
       exit(status);
       break;   
     case SYS_WRITE:
+      // 3 arguments
 
-      printf ("system call!\n");
-      thread_exit ();
+      //hex_dump(f->esp+8, f->esp+8, 64, true);
+      f->eax = write(*(int*)(f->esp +4), (f->esp +8), *(int*)(f->esp +12));
+
       break;
     case SYS_CREATE:
       // 2 arguments
@@ -82,8 +101,6 @@ syscall_handler(struct intr_frame *f UNUSED)
       break;
 
   }
-  printf ("system call!\n");
-  thread_exit ();
 }
 
 //define all the system calls here from the header
@@ -109,8 +126,9 @@ void exit(int status){
 
 bool create(const char *file, unsigned initial_size){
   //create a file
+  printf("HEJ!");
   return filesys_create(file, initial_size);
-
+  
 }
 
 int open(const char* filename){
@@ -140,7 +158,7 @@ void close(int fd){
 }
 
 int read(int fd, void *buffer, unsigned size){
-  if(fd == STDIN_FILENO){
+  if(fd == 0){
     int len = 0;
     while(len < size){
       char c = input_getc();
@@ -158,21 +176,47 @@ int read(int fd, void *buffer, unsigned size){
 }
 
 int write(int fd, const void *buffer, unsigned size){
-  if(fd == 1){
-    putbuf(buffer, size);
+  //validate arguments
+  if(buffer == NULL || !is_user_vaddr(buffer)){
+    exit(-1);
   }
-  return 0;
+  if(fd == 0){
+    exit(-1);
+  }
+
+ 
+  if(fd == 1){
+
+    putbuf(buffer, size);
+    return size;
+  }
+  
+  struct fd_elem * fd_elem = get_file(fd);
+  if(fd_elem == NULL){
+    return -1;
+  } 
+
+  
+
+  return file_write(fd_elem->file, buffer, size);
+
+  
+
 }
-/*struct file_desc * get_file_desc(int fd){
+
+struct fd_elem * get_file (int fd) {
+
   struct thread *t = thread_current();
   struct list_elem *e;
-  for(e = list_begin(&t->file_desc_list); e != list_end(&t->file_desc_list); e = list_next(e)){
-    struct file_desc *fd = list_entry(e, struct file_desc, elem);
-    if(fd->fd == fd){
-      return fd;
+  
+  for(e = list_begin(&t->open_files); e != list_end(&t->open_files); e = list_next(e)){
+    struct fd_elem *fd_elem = list_entry(e, struct fd_elem, elem);
+
+    if(fd_elem->fd == fd){
+
+      return fd_elem;
     }
   }
   return NULL;
-}
 
-*/
+} 
