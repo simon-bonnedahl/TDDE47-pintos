@@ -12,12 +12,12 @@
 #include "threads/malloc.h"
 #include "devices/input.h"
 #include "userprog/process.h"
-
+#include "userprog/pagedir.h"
 
 /*pintos --qemu -p ../../examples/lab1test2 -a test2 -- -q*/
 /*pintos --qemu -p ../../examples/lab1test2 -a test2 -- -q run test2*/
-/*pintos --qemu -- rm test2*/
-#include "userprog/pagedir.h"
+/*pintos -- rm test2*/
+
 
 static void syscall_handler (struct intr_frame *);
 int OPEN_FILES = 2;
@@ -39,14 +39,15 @@ syscall_handler(struct intr_frame *f UNUSED)
 
   int * stack_pointer = f->esp;
   int syscall = *stack_pointer;
+  if(!valid (stack_pointer))
+    kill();
 
-  hex_dump(stack_pointer, stack_pointer, 128, true);
 
   int status;
   int fileDescriptor;
-  int fileSize;
+  unsigned fileSize;
   char* fileName;
-  char* buffer;
+  const void* buffer;
   
 
 
@@ -62,18 +63,20 @@ syscall_handler(struct intr_frame *f UNUSED)
       break;   
     case SYS_WRITE:
       // 3 arguments
+      fileDescriptor = *(int*)(f->esp + 4);
+      buffer = *(void**)(f->esp + 8);
+      fileSize = *(unsigned*)(f->esp + 12);
 
       //hex_dump(f->esp+8, f->esp+8, 64, true);
-      f->eax = write(*(int*)(f->esp +4), (f->esp +8), *(int*)(f->esp +12));
+      f->eax = write(fileDescriptor, buffer, fileSize);
 
       break;
     case SYS_CREATE:
       // 2 arguments
-      fileDescriptor = *(int*)(f->esp + 4);
-      fileSize = *(int*)(f->esp + 8);
-      ASSERT(fileDescriptor != NULL);
-      ASSERT(fileSize != NULL);
-      f->eax = create(fileDescriptor, fileSize);
+      fileName = *(char**)(f->esp + 4);
+      fileSize = *(unsigned*)(f->esp + 8);
+      f->eax = create(fileName, fileSize);
+
       break;
     case SYS_OPEN:
       // 1 argument
@@ -124,10 +127,16 @@ void exit(int status){
 
 }
 
-bool create(const char *file, unsigned initial_size){
-  //create a file
-  printf("HEJ!");
-  return filesys_create(file, initial_size);
+bool create(const char* filename, unsigned initial_size){
+  //validate arguments
+  printf("create: %s\n", filename);
+  printf("initial_size: %d\n", initial_size);
+  if(filename == NULL || !is_user_vaddr(filename)){
+    kill();
+  }
+  
+
+  return filesys_create(filename, initial_size);
   
 }
 
@@ -220,3 +229,16 @@ struct fd_elem * get_file (int fd) {
   return NULL;
 
 } 
+
+bool valid(void * vaddr)
+{
+  return (is_user_vaddr(vaddr) && 
+    pagedir_get_page(thread_current()->pagedir,vaddr)!=NULL);
+}
+
+/* Exits the process with -1 status */
+void kill () 
+{
+  exit(-1);
+  
+}
