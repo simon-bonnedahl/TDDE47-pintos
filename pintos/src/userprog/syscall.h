@@ -14,7 +14,7 @@ int open(const char *file);
 int read(int fd, void *buffer, unsigned size);
 int write(int fd, const void *buffer, unsigned size);
 void close(int fd);
-struct fd_elem * get_fd_elem (int fd);
+struct file_descriptor * get_file_descriptor (int fd);
 bool valid(void *vaddr);
 void kill();
 //declare a variable that tracks the amount of open files

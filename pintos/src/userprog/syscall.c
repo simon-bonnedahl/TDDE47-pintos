@@ -3,6 +3,7 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <string.h>
+#include <list.h>
 
 #include "syscall.h"
 #include "syscall-nr.h"
@@ -22,8 +23,10 @@
 static void syscall_handler (struct intr_frame *);
 int OPEN_FILES = 2;
 
-struct fd_elem{
-  int fd;
+struct list fd_list;
+
+struct file_descriptor{
+  int value;
   struct file * file;
   struct list_elem elem;
 };  
@@ -31,7 +34,8 @@ struct fd_elem{
 void syscall_init(void)
 {
   intr_register_int(0x30, 3, INTR_ON, syscall_handler, "syscall");
-  list_init(&thread_current()->open_files);
+
+  list_init(&fd_list);
 }
 
 static void
@@ -62,6 +66,7 @@ syscall_handler(struct intr_frame *f UNUSED)
       status = *(int*)(f->esp + 4);
       exit(status);
       break;   
+
     case SYS_WRITE:
       // 3 arguments
       fileDescriptor = *(int*)(f->esp + 4);
@@ -87,9 +92,7 @@ syscall_handler(struct intr_frame *f UNUSED)
     case SYS_CLOSE:
       // 1 argument
       fileDescriptor = *(int*)(f->esp + 4);
-      ASSERT(fileDescriptor != NULL);
       close(fileDescriptor);
-
       break;
 
     case SYS_READ:
@@ -104,23 +107,25 @@ syscall_handler(struct intr_frame *f UNUSED)
   }
 }
 
-//define all the system calls here from the header
-
-    struct file* open_files[128];         //Lab 1
+//define all the system calls here from the headerfd
 
 void halt(void){
   power_off();
 }
 
 void exit(int status){
-  thread_current()->status = status;
-  //close all the files in thread_current()->open_files
-  struct file* open_files = thread_current()->open_files;
-  for(int i = 2; i < OPEN_FILES; i++){
-    close(i);
-  }
+  
+  struct list_elem *e;
+  struct file_descriptor * file_descriptor;
+  for (e = list_begin(&fd_list); e != list_end(&fd_list); e = list_next (e)) {
+		file_descriptor = list_entry (e, struct file_descriptor, elem);
+    file_close(file_descriptor->file);
+    list_remove(&file_descriptor->elem);
+    free(file_descriptor);
+	}
 
   printf("%s: exit(%d)", thread_current()->name, status);
+  thread_current()->status = status;
   thread_exit();
 
 }
@@ -137,25 +142,16 @@ bool create(const char* filename, unsigned initial_size){
 
 int open(const char* filename){
 
-  //open the file
-
   struct file* open_file = filesys_open(filename);
     if(open_file == NULL){
     return -1;
   }
-  struct fd_elem *fd_elem = malloc(sizeof(struct fd_elem));
-  int fd = OPEN_FILES;
-  fd_elem->fd = fd;
-  fd_elem->file = open_file;
-  list_push_back(&thread_current()->open_files, &fd_elem->elem);
+  struct file_descriptor *file_descriptor = malloc(sizeof(struct file_descriptor));
+  file_descriptor->value = OPEN_FILES;
+  file_descriptor->file = open_file;
+  list_push_back(&fd_list, &file_descriptor->elem);
   OPEN_FILES++;
-  return fd;
- /* struct fd_elem *fd_elem = malloc(sizeof(struct fd_elem));
-  fd_elem->fd = OPEN_FILES;
-  fd_elem->file = open_file;
-  //list_push_back(student_list, &new_student->elem);
-  list_push_back(&thread_current()->open_files, &fd_elem->elem);
-  return OPEN_FILES++;*/
+  return file_descriptor->value;
 
 }
 
@@ -166,14 +162,14 @@ void close(int fd){
     exit(-1);
   }
 
-  struct fd_elem* fd_elem = get_fd_elem(fd);
-  if(fd_elem == NULL){
+  struct file_descriptor * file_descriptor = get_file_descriptor(fd);
+  if(file_descriptor == NULL){
     exit(-1);
   }
 
-  file_close(fd_elem->file);
-  list_remove(&fd_elem->elem);
-  free(fd_elem);
+  file_close(file_descriptor->file);
+  list_remove(&file_descriptor->elem);
+  free(file_descriptor);
 }
 
 int read(int fd, void *buffer, unsigned size){
@@ -190,8 +186,12 @@ int read(int fd, void *buffer, unsigned size){
     }
     return len;
   }
-  if(open_files[fd] == NULL) return -1;
-  return file_read(fd, buffer, size);
+  struct file_descriptor * file_descriptor = get_file_descriptor(fd);
+  if(file_descriptor == NULL) return -1;
+  printf("file descriptor is %d", file_descriptor->value);
+  printf("file descriptor is %d", file_descriptor->file);
+  printf("fd is %d", fd);
+  return file_read(file_descriptor->file, buffer, size);
 
 }
 
@@ -211,30 +211,31 @@ int write(int fd, const void *buffer, unsigned size){
     return size;
   }
   
-  struct fd_elem * fd_elem = get_fd_elem(fd);
-  if(fd_elem == NULL){
+  struct file_descriptor * file_descriptor = get_file_descriptor(fd);
+
+  if(file_descriptor == NULL){
     return -1;
   } 
 
   
 
-  return file_write(fd_elem->file, buffer, size);
+  return file_write(file_descriptor->file, buffer, size);
 
   
 
 }
 
-struct fd_elem * get_fd_elem (int fd) {
+struct file_descriptor * get_file_descriptor (int fd) {
 
-  struct thread *t = thread_current();
   struct list_elem *e;
   
-  for(e = list_begin(&t->open_files); e != list_end(&t->open_files); e = list_next(e)){
-    struct fd_elem *fd_elem = list_entry(e, struct fd_elem, elem);
+  for(e = list_begin(&fd_list); e != list_end(&fd_list); e = list_next(e)){
+    struct file_descriptor * fd = list_entry(e, struct file_descriptor, elem);
+    
 
-    if(fd_elem->fd == fd){
+    if(fd->value == fd){
 
-      return fd_elem;
+      return fd;
     }
   }
   return NULL;
