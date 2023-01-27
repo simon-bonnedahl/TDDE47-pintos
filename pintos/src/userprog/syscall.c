@@ -31,6 +31,7 @@ struct fd_elem{
 void syscall_init(void)
 {
   intr_register_int(0x30, 3, INTR_ON, syscall_handler, "syscall");
+  list_init(&thread_current()->open_files);
 }
 
 static void
@@ -80,9 +81,8 @@ syscall_handler(struct intr_frame *f UNUSED)
       break;
     case SYS_OPEN:
       // 1 argument
-      fileName = *(int*)(f->esp + 4);
-      ASSERT(fileName != NULL);
-      fileDescriptor = open(fileName);
+      fileName = *(char**)(f->esp + 4);
+      f->eax = open(fileName);
       break;
     case SYS_CLOSE:
       // 1 argument
@@ -95,11 +95,9 @@ syscall_handler(struct intr_frame *f UNUSED)
     case SYS_READ:
       // 3 arguments
       fileDescriptor = *(int*)(f->esp + 4);
-      buffer = *(char*)(f->esp + 8);
-      fileSize = *(int*)(f->esp + 12);
-      ASSERT(fileDescriptor != NULL);
-      ASSERT(buffer != NULL);
-      ASSERT(fileSize != NULL);
+      buffer = *(void**)(f->esp + 8);
+      fileSize = *(unsigned*)(f->esp + 12);
+
       f->eax = read(fileDescriptor, buffer, fileSize);
       break;
 
@@ -128,13 +126,10 @@ void exit(int status){
 }
 
 bool create(const char* filename, unsigned initial_size){
-  //validate arguments
-  printf("create: %s\n", filename);
-  printf("initial_size: %d\n", initial_size);
+
   if(filename == NULL || !is_user_vaddr(filename)){
     kill();
   }
-  
 
   return filesys_create(filename, initial_size);
   
@@ -143,31 +138,47 @@ bool create(const char* filename, unsigned initial_size){
 int open(const char* filename){
 
   //open the file
+
   struct file* open_file = filesys_open(filename);
-  open_files[OPEN_FILES] = open_file;
-  if(open_file == NULL){
+    if(open_file == NULL){
     return -1;
   }
-  return OPEN_FILES++;
+  struct fd_elem *fd_elem = malloc(sizeof(struct fd_elem));
+  int fd = OPEN_FILES;
+  fd_elem->fd = fd;
+  fd_elem->file = open_file;
+  list_push_back(&thread_current()->open_files, &fd_elem->elem);
+  OPEN_FILES++;
+  return fd;
+ /* struct fd_elem *fd_elem = malloc(sizeof(struct fd_elem));
+  fd_elem->fd = OPEN_FILES;
+  fd_elem->file = open_file;
+  //list_push_back(student_list, &new_student->elem);
+  list_push_back(&thread_current()->open_files, &fd_elem->elem);
+  return OPEN_FILES++;*/
 
 }
 
 void close(int fd){
 
+  //validate arguments
+  if(fd == 0  || fd == 1){
+    exit(-1);
+  }
 
- file_close(thread_current()->open_files[fd]);
-  thread_current()->open_files[fd]= NULL;
-  OPEN_FILES--;
-  
- 
-  //close the file
-  
-  
+  struct fd_elem* fd_elem = get_fd_elem(fd);
+  if(fd_elem == NULL){
+    exit(-1);
+  }
 
+  file_close(fd_elem->file);
+  list_remove(&fd_elem->elem);
+  free(fd_elem);
 }
 
 int read(int fd, void *buffer, unsigned size){
-  if(fd == 0){
+
+   if(fd == 0){
     int len = 0;
     while(len < size){
       char c = input_getc();
@@ -178,10 +189,10 @@ int read(int fd, void *buffer, unsigned size){
       len++;
     }
     return len;
-  }else{
-    //struct file_desc *fd = get_file_desc(fd);
-    //file_read(fd, buffer, size);
   }
+  if(open_files[fd] == NULL) return -1;
+  return file_read(fd, buffer, size);
+
 }
 
 int write(int fd, const void *buffer, unsigned size){
@@ -200,7 +211,7 @@ int write(int fd, const void *buffer, unsigned size){
     return size;
   }
   
-  struct fd_elem * fd_elem = get_file(fd);
+  struct fd_elem * fd_elem = get_fd_elem(fd);
   if(fd_elem == NULL){
     return -1;
   } 
@@ -213,7 +224,7 @@ int write(int fd, const void *buffer, unsigned size){
 
 }
 
-struct fd_elem * get_file (int fd) {
+struct fd_elem * get_fd_elem (int fd) {
 
   struct thread *t = thread_current();
   struct list_elem *e;

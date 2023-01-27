@@ -23,6 +23,7 @@ typedef int tid_t;
 #define PRI_MIN 0                       /* Lowest priority. */
 #define PRI_DEFAULT 31                  /* Default priority. */
 #define PRI_MAX 63                      /* Highest priority. */
+#define OPENFILES_MAX 128               //Lab 1
 
 /* A kernel thread or user process.
 
@@ -93,7 +94,7 @@ struct thread
 
     struct list_elem elem;              /* List element. */
 
-    struct file* open_files[128];         //Lab 1
+    struct file* open_files[OPENFILES_MAX];         //Lab 1
 
 #ifdef USERPROG
     /* Owned by userprog/process.c. */
