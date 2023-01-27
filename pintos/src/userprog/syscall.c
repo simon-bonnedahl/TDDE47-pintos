@@ -47,6 +47,7 @@ syscall_handler(struct intr_frame *f UNUSED)
   if(!valid (stack_pointer))
     kill();
 
+  //hex_dump(stack_pointer, stack_pointer, 128, true);
 
   int status;
   int fileDescriptor;
@@ -55,7 +56,7 @@ syscall_handler(struct intr_frame *f UNUSED)
   const void* buffer;
   
 
-
+  //printf("syscall: %d \n", syscall);
   switch (syscall) {
 
     case SYS_HALT:
@@ -96,6 +97,7 @@ syscall_handler(struct intr_frame *f UNUSED)
       break;
 
     case SYS_READ:
+      
       // 3 arguments
       fileDescriptor = *(int*)(f->esp + 4);
       buffer = *(void**)(f->esp + 8);
@@ -103,11 +105,14 @@ syscall_handler(struct intr_frame *f UNUSED)
 
       f->eax = read(fileDescriptor, buffer, fileSize);
       break;
-
+    default:
+      printf("Unknown system call!");
+      kill();
+      break;
   }
+
 }
 
-//define all the system calls here from the headerfd
 
 void halt(void){
   power_off();
@@ -157,19 +162,16 @@ int open(const char* filename){
 
 void close(int fd){
 
-  //validate arguments
   if(fd == 0  || fd == 1){
-    exit(-1);
+    kill();
   }
-
   struct file_descriptor * file_descriptor = get_file_descriptor(fd);
   if(file_descriptor == NULL){
-    exit(-1);
+    kill();
   }
-
   file_close(file_descriptor->file);
   list_remove(&file_descriptor->elem);
-  free(file_descriptor);
+  //free(file_descriptor); Behövs detta?
 }
 
 int read(int fd, void *buffer, unsigned size){
@@ -181,16 +183,13 @@ int read(int fd, void *buffer, unsigned size){
       if(c == '\0'){
         break;
       }
-      //buffer[len] = c;
       len++;
     }
     return len;
   }
+
   struct file_descriptor * file_descriptor = get_file_descriptor(fd);
   if(file_descriptor == NULL) return -1;
-  printf("file descriptor is %d", file_descriptor->value);
-  printf("file descriptor is %d", file_descriptor->file);
-  printf("fd is %d", fd);
   return file_read(file_descriptor->file, buffer, size);
 
 }
@@ -198,12 +197,11 @@ int read(int fd, void *buffer, unsigned size){
 int write(int fd, const void *buffer, unsigned size){
   //validate arguments
   if(buffer == NULL || !is_user_vaddr(buffer)){
-    exit(-1);
+    kill();
   }
   if(fd == 0){
-    exit(-1);
+    kill();
   }
-
  
   if(fd == 1){
 
@@ -230,25 +228,24 @@ struct file_descriptor * get_file_descriptor (int fd) {
   struct list_elem *e;
   
   for(e = list_begin(&fd_list); e != list_end(&fd_list); e = list_next(e)){
-    struct file_descriptor * fd = list_entry(e, struct file_descriptor, elem);
-    
+    struct file_descriptor * file_descriptor = list_entry(e, struct file_descriptor, elem);
+  
 
-    if(fd->value == fd){
+    if(file_descriptor->value == fd){
 
-      return fd;
+      return file_descriptor;
     }
   }
+  //printf("file descriptor not found");
   return NULL;
 
 } 
 
 bool valid(void * vaddr)
 {
-  return (is_user_vaddr(vaddr) && 
-    pagedir_get_page(thread_current()->pagedir,vaddr)!=NULL);
+  return (is_user_vaddr(vaddr) && pagedir_get_page(thread_current()->pagedir,vaddr)!=NULL);
 }
 
-/* Exits the process with -1 status */
 void kill () 
 {
   exit(-1);

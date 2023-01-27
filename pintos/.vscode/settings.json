@@ -1,5 +1,6 @@
 {
   "files.associations": {
-    "synch.h": "c"
+    "synch.h": "c",
+    "stddef.h": "c"
   }
 }
