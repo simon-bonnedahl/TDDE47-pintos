@@ -22,8 +22,6 @@
 static void syscall_handler(struct intr_frame *);
 int OPEN_FILES = 2;
 
-struct list fd_list;
-
 struct file_descriptor
 {
   int value;
@@ -34,8 +32,6 @@ struct file_descriptor
 void syscall_init(void)
 {
   intr_register_int(0x30, 3, INTR_ON, syscall_handler, "syscall");
-
-  list_init(&fd_list);
 }
 
 static void
@@ -119,10 +115,10 @@ void halt(void)
 
 void exit(int status)
 {
-
+  struct thread *t = thread_current();
   struct list_elem *e;
   struct file_descriptor *file_descriptor;
-  for (e = list_begin(&fd_list); e != list_end(&fd_list); e = list_next(e))
+  for (e = list_begin(&t->fd_list); e != list_end(&t->fd_list); e = list_next(e))
   {
     file_descriptor = list_entry(e, struct file_descriptor, elem);
     file_close(file_descriptor->file);
@@ -157,7 +153,7 @@ int open(const char *filename)
   struct file_descriptor *file_descriptor = malloc(sizeof(struct file_descriptor));
   file_descriptor->value = OPEN_FILES;
   file_descriptor->file = open_file;
-  list_push_back(&fd_list, &file_descriptor->elem);
+  list_push_back(&thread_current()->fd_list, &file_descriptor->elem);
   OPEN_FILES++;
   return file_descriptor->value;
 }
@@ -236,6 +232,7 @@ struct file_descriptor *get_file_descriptor(int fd)
 {
 
   struct list_elem *e;
+  struct list fd_list = thread_current()->fd_list;
 
   for (e = list_begin(&fd_list); e != list_end(&fd_list); e = list_next(e))
   {
