@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-
 void append(struct node *root, int value)
 {
     // Travers the list until we get to the end
@@ -43,6 +42,19 @@ void print(struct node *root)
     printf("\n");
 }
 
+void input_sorted(struct node *root, int value)
+{
+    struct node *current = root;
+    while (current->next != NULL && current->next->value < value)
+    {
+        current = current->next;
+    }
+    struct node *newNode = (struct node *)malloc(sizeof(struct node));
+    newNode->value = value;
+    newNode->next = current->next;
+    current->next = newNode;
+}
+
 void clear(struct node *root)
 {
     struct node *current;
@@ -80,6 +92,17 @@ int main(int argc, char **argv)
     append(&root, 7);
     append(&root, 6);
     prepend(&root, 19);
+    print(&root);
+    clear(&root);
+
+    printf("Third list is sorted: ");
+    input_sorted(&root, 10);
+    input_sorted(&root, 9);
+    input_sorted(&root, 8);
+    input_sorted(&root, 20);
+    input_sorted(&root, 7);
+    input_sorted(&root, 6);
+    input_sorted(&root, 19);
     print(&root);
     clear(&root);
 }
