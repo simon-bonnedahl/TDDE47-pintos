@@ -96,6 +96,11 @@ struct thread
 
     struct file* open_files[OPENFILES_MAX];         //Lab 1
 
+    /*Lab 2*/
+   int64_t wakeup_time;                /* Time to wake up */
+   struct list_elem sleep_elem;        /* List element for sleep list */
+   
+
 #ifdef USERPROG
     /* Owned by userprog/process.c. */
     uint32_t *pagedir;                  /* Page directory. */

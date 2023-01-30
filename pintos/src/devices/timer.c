@@ -24,6 +24,8 @@ static int64_t ticks;
    Initialized by timer_calibrate(). */
 static unsigned loops_per_tick;
 
+struct list sleep_list;   //lab 2
+
 static intr_handler_func timer_interrupt;
 static bool too_many_loops (unsigned loops);
 static void busy_wait (int64_t loops);
@@ -44,6 +46,8 @@ timer_init (void)
   outb (0x40, count >> 8);
 
   intr_register_ext (0x20, timer_interrupt, "8254 Timer");
+
+  list_init(&sleep_list);   //lab 2
 }
 
 /* Calibrates loops_per_tick, used to implement brief delays. */
@@ -95,8 +99,9 @@ timer_elapsed (int64_t then)
 /* Suspends execution for approximately TICKS timer ticks. */
 void
 timer_sleep (int64_t ticks) 
-{
-  int64_t start = timer_ticks ();
+{ 
+  ASSERT (intr_get_level () == INTR_ON);
+  
 
   // implement a priority queue for sleeping threads
   // when a thread is put to sleep, it is added to the queue
@@ -106,22 +111,19 @@ timer_sleep (int64_t ticks)
 
   /* Turn interrupts on. */
   enum intr_level old_level = intr_disable ();
-
-struct thread *current_thread = thread_current();
+  int64_t start = timer_ticks ();
+  struct thread *current_thread = thread_current();
 
   /* Set the thread to sleep. */
-  current_thread-> wakeup_time = start + ticks;
-
+  current_thread->wakeup_time = start + ticks;
 
   list_insert_ordered(&sleep_list, &current_thread->elem, list_less_func, NULL);
 
-
-
-  list_push_back(&sleep_list, &current_thread->elem);
+ // list_push_back(&sleep_list, &current_thread->elem);     Ska nog inte användas
 
   thread_block();
 
-ASSERT (intr_get_level () == INTR_ON);
+
 
 /* Do busy-waiting. */
 while (timer_elapsed (start) < ticks) 
