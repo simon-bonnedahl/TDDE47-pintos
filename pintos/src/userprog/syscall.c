@@ -105,6 +105,12 @@ syscall_handler(struct intr_frame *f UNUSED)
 
     f->eax = read(fileDescriptor, buffer, fileSize);
     break;
+
+    case SYS_WAIT:
+    // 1 argument
+    int64_t ticks = *(int64_t *)(f->esp + 4);
+
+
   default:
     printf("Unknown system call!");
     kill();
