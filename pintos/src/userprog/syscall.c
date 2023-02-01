@@ -22,8 +22,6 @@
 static void syscall_handler(struct intr_frame *);
 int OPEN_FILES = 2;
 
-struct list fd_list;
-
 struct file_descriptor
 {
   int value;
@@ -34,8 +32,6 @@ struct file_descriptor
 void syscall_init(void)
 {
   intr_register_int(0x30, 3, INTR_ON, syscall_handler, "syscall");
-
-  list_init(&fd_list);
 }
 
 static void
@@ -54,6 +50,7 @@ syscall_handler(struct intr_frame *f UNUSED)
   unsigned fileSize;
   char *fileName;
   const void *buffer;
+  int64_t ticks;
 
   // printf("syscall: %d \n", syscall);
   switch (syscall)
@@ -108,7 +105,7 @@ syscall_handler(struct intr_frame *f UNUSED)
 
     case SYS_WAIT:
     // 1 argument
-    int64_t ticks = *(int64_t *)(f->esp + 4);
+    ticks = *(int64_t *)(f->esp + 4);
 
 
   default:
@@ -128,6 +125,8 @@ void exit(int status)
 
   struct list_elem *e;
   struct file_descriptor *file_descriptor;
+  struct thread *current_thread = thread_current();
+  struct list *fd_list = &current_thread->fd_list;
   for (e = list_begin(&fd_list); e != list_end(&fd_list); e = list_next(e))
   {
     file_descriptor = list_entry(e, struct file_descriptor, elem);
@@ -160,6 +159,8 @@ int open(const char *filename)
   {
     return -1;
   }
+  struct thread *current_thread = thread_current();
+  struct list *fd_list = &current_thread->fd_list;
   struct file_descriptor *file_descriptor = malloc(sizeof(struct file_descriptor));
   file_descriptor->value = OPEN_FILES;
   file_descriptor->file = open_file;
@@ -242,7 +243,8 @@ struct file_descriptor *get_file_descriptor(int fd)
 {
 
   struct list_elem *e;
-
+  struct thread *current_thread = thread_current();
+  struct list *fd_list = &current_thread->fd_list;
   for (e = list_begin(&fd_list); e != list_end(&fd_list); e = list_next(e))
   {
     struct file_descriptor *file_descriptor = list_entry(e, struct file_descriptor, elem);

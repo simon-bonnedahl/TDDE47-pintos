@@ -5,6 +5,7 @@
 #include <list.h>
 #include <stdint.h>
 
+
 /* States in a thread's life cycle. */
 enum thread_status
   {
@@ -90,11 +91,11 @@ struct thread
     uint8_t *stack;                     /* Saved stack pointer. */
     int priority;                       /* Priority. */
 
-    /* Shared between thread.c and synch.c. */
+    /* Shared between thread.c and synch.c. */ 
 
     struct list_elem elem;              /* List element. */
 
-    struct file* open_files[OPENFILES_MAX];         //Lab 1
+    struct list fd_list;                       //Lab 1
 
     /*Lab 2*/
    int64_t wakeup_time;                /* Time to wake up */

@@ -23,6 +23,7 @@
 /* List of processes in THREAD_READY state, that is, processes
    that are ready to run but not actually running. */
 static struct list ready_list;
+struct list fd_list; //lab 1
 
 /* Idle thread. */
 static struct thread *idle_thread;
@@ -87,6 +88,7 @@ thread_init (void)
 
   lock_init (&tid_lock);
   list_init (&ready_list);
+  list_init(&fd_list);
 
   /* Set up a thread structure for the running thread. */
   initial_thread = running_thread ();
@@ -104,6 +106,8 @@ thread_start (void)
   struct semaphore idle_started;
   sema_init (&idle_started, 0);
   thread_create ("idle", PRI_MIN, idle, &idle_started);
+
+ 
 
   /* Start preemptive thread scheduling. */
   intr_enable ();
@@ -229,7 +233,7 @@ thread_unblock (struct thread *t)
 
   ASSERT (is_thread (t));
 
-  old_level = intr_disable ();
+  old_level = intr_disable ();    struct file* open_files[OPENFILES_MAX];         //Lab 1
   ASSERT (t->status == THREAD_BLOCKED);
   list_push_back (&ready_list, &t->elem);
   t->status = THREAD_READY;

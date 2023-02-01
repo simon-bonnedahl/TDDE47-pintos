@@ -30,6 +30,7 @@ static intr_handler_func timer_interrupt;
 static bool too_many_loops (unsigned loops);
 static void busy_wait (int64_t loops);
 static void real_time_sleep (int64_t num, int32_t denom);
+bool list_priority_sort(const struct list_elem *a, const struct list_elem *b, void *aux); //lab2
 
 /* Sets up the 8254 Programmable Interval Timer (PIT) to
    interrupt PIT_FREQ times per second, and registers the
@@ -109,7 +110,7 @@ timer_sleep (int64_t ticks)
   // when a thread is woken up, it is added to the ready queue
   // when a thread is added to the ready queue, it is sorted by priority
 
-  /* Turn interrupts on. */
+  // /* Turn interrupts on. */
   enum intr_level old_level = intr_disable ();
   int64_t start = timer_ticks ();
   struct thread *current_thread = thread_current();
@@ -117,7 +118,7 @@ timer_sleep (int64_t ticks)
   /* Set the thread to sleep. */
   current_thread->wakeup_time = start + ticks;
 
-  list_insert_ordered(&sleep_list, &current_thread->elem, list_less_func, NULL);
+  list_insert_ordered(&sleep_list, &current_thread->sleep_elem, list_priority_sort, NULL);
 
  // list_push_back(&sleep_list, &current_thread->elem);     Ska nog inte användas
 
@@ -245,3 +246,9 @@ real_time_sleep (int64_t num, int32_t denom)
     }
 }
 
+//less function for the sleep list
+bool list_priority_sort(const struct list_elem *a, const struct list_elem *b, void *aux UNUSED) {
+  struct thread *thread_a = list_entry(a, struct thread, sleep_elem);
+  struct thread *thread_b = list_entry(b, struct thread, sleep_elem);
+  return thread_a->wakeup_time < thread_b->wakeup_time;
+}
