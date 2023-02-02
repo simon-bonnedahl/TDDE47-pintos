@@ -102,45 +102,16 @@ void
 timer_sleep (int64_t ticks) 
 { 
   ASSERT (intr_get_level () == INTR_ON);
-  
-
-  // implement a priority queue for sleeping threads
-  // when a thread is put to sleep, it is added to the queue
-  // when a thread is woken up, it is removed from the queue
-  // when a thread is woken up, it is added to the ready queue
-  // when a thread is added to the ready queue, it is sorted by priority
-
-  // /* Turn interrupts on. */
   enum intr_level old_level = intr_disable ();
+
+
   int64_t start = timer_ticks ();
-  struct thread *current_thread = thread_current();
-
-  /* Set the thread to sleep. */
-  current_thread->wakeup_time = start + ticks;
-
-  list_insert_ordered(&sleep_list, &current_thread->sleep_elem, list_priority_sort, NULL);
-
- // list_push_back(&sleep_list, &current_thread->elem);     Ska nog inte användas
+  struct thread *t = thread_current();
+  t->wakeup_time = start + ticks;
+  list_insert_ordered(&sleep_list, &t->sleep_elem, list_priority_sort, NULL);
 
   thread_block();
-
-
-
-/* Do busy-waiting. */
-while (timer_elapsed (start) < ticks) 
-  thread_yield ();
-
-  /*Skapa sleeplist (där passande)
-  static struct list sleep_list
-  Initiera
-  
-  */
-    /* sleep_list: wakeup(): list_push_back() --> ready_list: running(): timer_sleep() --> sleep_list.... ---> */
-
-    /* if(timer_elapsed(start) < ticks) {
-      thread_sleep(start + ticks);
-    }*/
-
+  intr_set_level(old_level);
     
 }
 
@@ -179,8 +150,25 @@ timer_interrupt (struct intr_frame *args UNUSED)
 
 
   ticks++;
+  wake_threads(); //lab2
   thread_tick ();
 
+}
+
+static void wake_threads() {
+
+  struct list_elem *e;
+  struct thread *t;
+  for (e = list_begin (&sleep_list); e != list_end (&sleep_list); e = list_next (e)) {
+    t = list_entry (e, struct thread, sleep_elem);
+    if (t->wakeup_time <= ticks) {
+      list_remove(e);
+
+      thread_unblock(t);
+    }
+    else break;
+
+  }
 }
 
 /* Returns true if LOOPS iterations waits for more than one timer

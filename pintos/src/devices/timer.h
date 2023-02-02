@@ -16,6 +16,8 @@ void timer_sleep (int64_t ticks);
 void timer_msleep (int64_t milliseconds);
 void timer_usleep (int64_t microseconds);
 void timer_nsleep (int64_t nanoseconds);
+static void wake_threads();
+
 
 void timer_print_stats (void);
 
