@@ -20,7 +20,7 @@
 /*pintos -- rm test2*/
 
 static void syscall_handler(struct intr_frame *);
-int OPEN_FILES = 2;
+
 
 struct file_descriptor
 {
@@ -32,12 +32,14 @@ struct file_descriptor
 void syscall_init(void)
 {
   intr_register_int(0x30, 3, INTR_ON, syscall_handler, "syscall");
+  
+
 }
 
 static void
 syscall_handler(struct intr_frame *f UNUSED)
 {
-
+  
   int *stack_pointer = f->esp;
   int syscall = *stack_pointer;
   if (!valid(stack_pointer))
@@ -115,9 +117,10 @@ void halt(void)
 
 void exit(int status)
 {
-  struct thread *t = thread_current();
+
   struct list_elem *e;
   struct file_descriptor *file_descriptor;
+  struct thread *t = thread_current();
   for (e = list_begin(&t->fd_list); e != list_end(&t->fd_list); e = list_next(e))
   {
     file_descriptor = list_entry(e, struct file_descriptor, elem);
@@ -150,11 +153,12 @@ int open(const char *filename)
   {
     return -1;
   }
+  struct thread *t = thread_current();
   struct file_descriptor *file_descriptor = malloc(sizeof(struct file_descriptor));
-  file_descriptor->value = OPEN_FILES;
+  file_descriptor->value = t->fd_count;
+  t->fd_count++;
   file_descriptor->file = open_file;
-  list_push_back(&thread_current()->fd_list, &file_descriptor->elem);
-  OPEN_FILES++;
+  list_push_back(&t->fd_list, &file_descriptor->elem);
   return file_descriptor->value;
 }
 
@@ -170,6 +174,7 @@ void close(int fd)
   {
     kill();
   }
+
   file_close(file_descriptor->file);
   list_remove(&file_descriptor->elem);
   // free(file_descriptor); Behövs detta?
@@ -230,11 +235,9 @@ int write(int fd, const void *buffer, unsigned size)
 
 struct file_descriptor *get_file_descriptor(int fd)
 {
-
+  struct thread *t = thread_current();
   struct list_elem *e;
-  struct list fd_list = thread_current()->fd_list;
-
-  for (e = list_begin(&fd_list); e != list_end(&fd_list); e = list_next(e))
+  for (e = list_begin(&t->fd_list); e != list_end(&t->fd_list); e = list_next(e))
   {
     struct file_descriptor *file_descriptor = list_entry(e, struct file_descriptor, elem);
 

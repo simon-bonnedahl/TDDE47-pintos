@@ -94,12 +94,13 @@ struct thread
 
    struct list_elem elem; /* List element. */
 
-   struct file *open_files[OPENFILES_MAX]; // Lab 1
-   struct list fd_list;                    // Lab 1
+   unsigned fd_count;                        // Lab 1
+   struct list fd_list;                      // Lab 1
 
 #ifdef USERPROG
    /* Owned by userprog/process.c. */
    uint32_t *pagedir; /* Page directory. */
+  
 
 #endif
 
