@@ -1,0 +1,18 @@
+Writing command line to /tmp/035Rsft_xf.dsk...
+c[?7l[2J[0mSeaBIOS (version 1.13.0-1ubuntu1.1)
+Booting from Hard Disk..Kernel command line: -q run alarm-negative
+Pintos booting with 3,968 kB RAM...
+356 pages available in kernel pool.
+356 pages available in user pool.
+Calibrating timer...  523,468,800 loops/s.
+Boot complete.
+Executing 'alarm-negative':
+(alarm-negative) begin
+(alarm-negative) PASS
+(alarm-negative) end
+Execution of 'alarm-negative' complete.
+Timer: 26 ticks
+Thread: 1 idle ticks, 25 kernel ticks, 0 user ticks
+Console: 409 characters output
+Keyboard: 0 keys pressed
+Powering off...
