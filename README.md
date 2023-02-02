@@ -1,3 +1,3 @@
 # TDDE47-Pintos
 
-Lab1 - All test passed!
+Lab 1 - All test passed!
