@@ -24,7 +24,29 @@ static bool load (const char *cmdline, void (**eip) (void), void **esp);
 /* Starts a new thread running a user program loaded from
    FILENAME.  The new thread may be scheduled (and may even exit)
    before process_execute() returns.  Returns the new process's
-   thread id, or TID_ERROR if the thread cannot be created. */
+   thread id, or TID_ERROR if the thread cannot be created. 
+   
+   
+   Hint: The only place where start_process is
+"called" is in process_execute. Hence, you can
+change the parameter of start_process (fname)
+and the argument to thread_create (fn_copy)
+to whatever you want (e.g. a pointer to a struct)
+
+• Hint: The initial thread "main" does not have any
+parent, and is not created by thread_create, but
+it is initialised by init_thread.
+
+
+Hint: To detect who is the last to exit, keep a
+counter together with the exit status. Set the
+initial value to 2, when the parent/child exits,
+decrement it by 1. When the value is 0 it
+represents that both the parent and child has
+exited, and whoever decrements it to 0 should free
+the memory of the shared struct*/
+
+
 tid_t
 process_execute (const char *file_name) 
 {

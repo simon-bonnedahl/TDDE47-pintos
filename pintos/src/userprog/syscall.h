@@ -14,9 +14,11 @@ int open(const char *file);
 int read(int fd, void *buffer, unsigned size);
 int write(int fd, const void *buffer, unsigned size);
 void close(int fd);
+pid_t exec(const char *cmd_line);
 struct file_descriptor * get_file_descriptor (int fd);
 bool valid(void *vaddr);
 void kill();
+
 //declare a variable that tracks the amount of open files
 //#define int OPEN_FILES = 2;
 #define STDIN_FILENO 0;

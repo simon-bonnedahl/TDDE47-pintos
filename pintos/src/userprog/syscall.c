@@ -103,6 +103,12 @@ syscall_handler(struct intr_frame *f UNUSED)
 
     f->eax = read(fileDescriptor, buffer, fileSize);
     break;
+  case SYS_EXEC:
+    // 1 argument
+    fileName = *(char **)(f->esp + 4);
+    f->eax = exec(fileName);
+    break;
+
   default:
     printf("Unknown system call!");
     kill();
@@ -259,4 +265,15 @@ bool valid(void *vaddr)
 void kill()
 {
   exit(-1);
+}
+
+pid_t exec(const char *cmd_line)
+{
+  if (cmd_line == NULL || !is_user_vaddr(cmd_line))
+  {
+    kill();
+  }
+  //spawn a new child process
+  
+  return process_execute(cmd_line);
 }
