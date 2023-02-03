@@ -46,6 +46,16 @@ represents that both the parent and child has
 exited, and whoever decrements it to 0 should free
 the memory of the shared struct*/
 
+child * get_child(tid_t tid, struct thread *t) {
+  struct list_elem *e;
+  for (e = list_begin(&thread_current()->children); e != list_end(&thread_current()->children); e = list_next(e)) {
+    struct child *c = list_entry(e, struct child, elem);
+    if (c->tid == tid) {
+      return c;
+    }
+  }
+  return NULL;
+}
 
 tid_t
 process_execute (const char *file_name) 

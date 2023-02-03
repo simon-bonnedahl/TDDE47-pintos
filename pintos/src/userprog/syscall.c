@@ -53,7 +53,7 @@ syscall_handler(struct intr_frame *f UNUSED)
   char *fileName;
   const void *buffer;
 
-  // printf("syscall: %d \n", syscall);
+  printf("syscall: %d \n", syscall);
   switch (syscall)
   {
 
