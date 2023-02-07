@@ -94,20 +94,22 @@ struct thread
 
    struct list_elem elem; /* List element. */
 
-   unsigned fd_count;                        // Lab 1
-   struct list fd_list;                      // Lab 1
+   unsigned fd_count;   // Lab 1
+   struct list fd_list; // Lab 1
 
-    /*Lab 2*/
-   int64_t wakeup_time;                /* Time to wake up */
-   struct list_elem sleep_elem;        /* List element for sleep list */
+   /*Lab 2*/
+   int64_t wakeup_time;         /* Time to wake up */
+   struct list_elem sleep_elem; /* List element for sleep list */
 
+   /*Lab 3*/
 
+   struct list children; /* List of children */
 
+   struct thread *parent; /* Parent thread */
 
 #ifdef USERPROG
    /* Owned by userprog/process.c. */
    uint32_t *pagedir; /* Page directory. */
-  
 
 #endif
 

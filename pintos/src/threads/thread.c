@@ -87,7 +87,6 @@ void thread_init(void)
 
   lock_init(&tid_lock);
   list_init(&ready_list);
-  
 
   /* Set up a thread structure for the running thread. */
   initial_thread = running_thread();
@@ -175,10 +174,10 @@ tid_t thread_create(const char *name, int priority,
   init_thread(t, name, priority);
   tid = t->tid = allocate_tid();
 
-  t->fd_count = 2;              //lab1
-  list_init(&t->fd_list);       //lab1
+  t->fd_count = 2;        // lab1
+  list_init(&t->fd_list); // lab1
 
- 
+  list_init(&t->children); // lab3
 
   /* Stack frame for kernel_thread(). */
   kf = alloc_frame(t, sizeof *kf);
