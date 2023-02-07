@@ -105,7 +105,7 @@ struct thread
 
    struct list children; /* List of children */
 
-   struct thread *parent; /* Parent thread */
+   struct parent_child *relation; /* Parent thread */
 
 #ifdef USERPROG
    /* Owned by userprog/process.c. */
