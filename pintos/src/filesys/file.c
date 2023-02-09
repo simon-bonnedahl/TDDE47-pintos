@@ -2,6 +2,7 @@
 #include <debug.h>
 #include "filesys/inode.h"
 #include "threads/malloc.h"
+#include <stdio.h>
 
 /* An open file. */
 struct file 
@@ -44,9 +45,12 @@ file_reopen (struct file *file)
 /* Closes FILE. */
 void
 file_close (struct file *file) 
+
 {
+
   if (file != NULL)
     {
+ 
       file_allow_write (file);
       inode_close (file->inode);
       free (file); 

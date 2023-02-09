@@ -11,6 +11,7 @@
 #include "threads/switch.h"
 #include "threads/synch.h"
 #include "threads/vaddr.h"
+
 #ifdef USERPROG
 #include "userprog/process.h"
 #endif
@@ -174,9 +175,10 @@ tid_t thread_create(const char *name, int priority,
   /* Initialize thread. */
   init_thread(t, name, priority);
   tid = t->tid = allocate_tid();
-
+  #ifdef USERPROG
   t->fd_count = 2;              //lab1
   list_init(&t->fd_list);       //lab1
+  #endif
 
   /* Stack frame for kernel_thread(). */
   kf = alloc_frame(t, sizeof *kf);
@@ -244,8 +246,7 @@ thread_name(void)
 /* Returns the running thread.
    This is running_thread() plus a couple of sanity checks.
    See the big comment at the top of thread.h for details. */
-struct thread *
-thread_current(void)
+struct thread * thread_current(void)
 {
   struct thread *t = running_thread();
 
@@ -273,9 +274,47 @@ void thread_exit(void)
   ASSERT(!intr_context());
 
 #ifdef USERPROG
-  process_exit();
-#endif
 
+  //Loop through whole fd_list and close all files
+ 
+  //print the content of the list
+ /* struct list_elem *e;
+  struct file_descriptor *fd;
+  struct thread *t = thread_current();
+  struct list *fd_list = &t->fd_list;
+
+  if(!list_empty(fd_list)) {
+
+    printf("hjälp");
+    //print fd_list size
+    printf("List size: %d", sizeof(fd_list));
+
+     for (e = list_begin (&fd_list); e != list_end (&fd_list); e = list_next (e))
+     {
+       printf("List size: %d", sizeof(fd_list));
+     
+    //print the element content
+  
+  //  fd = list_entry(e, struct file_descriptor, elem);
+
+    //file_close(fd->file);
+   
+  //  file_close(fd->file);
+
+  }
+  }  */
+  process_exit();
+
+  #endif
+  
+  
+
+
+
+
+
+  
+ 
   /* Just set our status to dying and schedule another process.
      We will be destroyed during the call to schedule_tail(). */
   intr_disable();

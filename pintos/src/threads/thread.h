@@ -97,6 +97,14 @@ struct thread
    unsigned fd_count;                        // Lab 1
    struct list fd_list;                      // Lab 1
 
+   struct file_descriptor
+   {
+   int value;
+   struct file *file;
+   struct list_elem elem;
+   };
+
+
 #ifdef USERPROG
    /* Owned by userprog/process.c. */
    uint32_t *pagedir; /* Page directory. */
