@@ -101,10 +101,20 @@ struct thread
    int64_t wakeup_time;         /* Time to wake up */
    struct list_elem sleep_elem; /* List element for sleep list */
 
+
+
    /*Lab 3*/
+  struct parent_child {
+   int alive_count;
+   int exit_status;
 
+   tid_t tid;
+   bool loaded;
+   struct lock lock;
+   struct list_elem elem;
+
+};
    struct list children; /* List of children */
-
    struct parent_child *relation; /* Parent thread */
 
 #ifdef USERPROG

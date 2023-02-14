@@ -155,7 +155,7 @@ void thread_print_stats(void)
    PRIORITY, but no actual priority scheduling is implemented.
    Priority scheduling is the goal of Problem 1-3. */
 tid_t thread_create(const char *name, int priority,
-                    thread_func *function, void *aux)
+                    thread_func *function, void *relation)
 {
   struct thread *t;
   struct kernel_thread_frame *kf;
@@ -178,12 +178,15 @@ tid_t thread_create(const char *name, int priority,
   list_init(&t->fd_list); // lab1
 
   list_init(&t->children); // lab3
+  struct exec_info *exec_info = malloc(sizeof(struct exec_info));
+  exec_info->relation = relation;
+  exec_info->file_name = name;
 
   /* Stack frame for kernel_thread(). */
   kf = alloc_frame(t, sizeof *kf);
   kf->eip = NULL;
   kf->function = function;
-  kf->aux = aux;
+  kf->aux = exec_info;
 
   /* Stack frame for switch_entry(). */
   ef = alloc_frame(t, sizeof *ef);

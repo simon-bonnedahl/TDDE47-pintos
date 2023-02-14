@@ -46,15 +46,15 @@ represents that both the parent and child has
 exited, and whoever decrements it to 0 should free
 the memory of the shared struct*/
 
-struct child *get_child(tid_t tid, struct thread *t)
+struct parent_child *get_relation(tid_t tid, struct thread *t)
 {
   struct list_elem *e;
   for (e = list_begin(&t->children); e != list_end(&t->children); e = list_next(e))
   {
-    struct child *c = list_entry(e, struct child, elem);
-    if (c->tid == tid)
+    struct parent_child *relation = list_entry(e, struct parent_child, elem);
+    if (relation->tid == tid)
     {
-      return c;
+      return relation;
     }
   }
   return NULL;
@@ -72,20 +72,23 @@ tid_t process_execute(const char *file_name)
     return TID_ERROR;
   strlcpy(fn_copy, file_name, PGSIZE);
 
+
+  struct parent_child * relation = malloc(sizeof(struct parent_child));
   /* Create a new thread to execute FILE_NAME. */
-  tid = thread_create(file_name, PRI_DEFAULT, start_process, fn_copy);
+  tid = thread_create(file_name, PRI_DEFAULT, start_process, &relation);
   if (tid == TID_ERROR)
   {
     palloc_free_page(fn_copy);
     return -1;
   }
 
-  struct child *
-      c = malloc(sizeof(struct child));
-  c->tid = tid;
-  c->exit_status = -1;
+
+  relation->tid = tid;
+  relation->exit_status = -1;
+  relation->alive_count = 2;
+  relation->loaded = true;
   struct thread *t = thread_current();
-  list_push_back(&t->children, &c->elem);
+  list_push_back(&t->children, &relation->elem);
 
   return tid;
 }
@@ -93,9 +96,10 @@ tid_t process_execute(const char *file_name)
 /* A thread function that loads a user process and starts it
    running. */
 static void
-start_process(void *file_name_)
+start_process(void *exec_info)
 {
-  char *file_name = file_name_;
+  struct exec_info *exec_info = exec_info;
+  char *file_name = exec_info->file_name;
   struct intr_frame if_;
   bool success;
 
@@ -106,10 +110,22 @@ start_process(void *file_name_)
   if_.eflags = FLAG_IF | FLAG_MBS;
   success = load(file_name, &if_.eip, &if_.esp);
 
+  //get the new thread
+  struct thread *t = thread_current();
+  //get the parent thread
+  t->relation = exec_info->relation;
+  t->relation->loaded = success;
   /* If load failed, quit. */
   palloc_free_page(file_name);
-  if (!success)
+  if (!success){
+    t->relation->exit_status = -1;
+    sema_up(&t->relation->sema);
     thread_exit();
+  }
+  sema_up(&t->relation->sema);
+    
+    
+
 
   /* Start the user process by simulating a return from an
      interrupt, implemented by intr_exit (in

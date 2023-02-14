@@ -9,15 +9,15 @@ void process_exit (void);
 void process_activate (void);
 
 
-/*Lab 3*/
-struct child {
-  tid_t tid;
-  int exit_status;
-  bool exited;
-  struct list_elem elem;
-};
 
-struct child * get_child(tid_t tid, struct thread *t);
+
+struct parent_child * get_relation(tid_t tid, struct thread *t);
+
+struct exec_info {
+  char *file_name;
+  struct semaphore sema;
+  struct parent_child relation;
+};
 
 
 #endif /* userprog/process.h */
