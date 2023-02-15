@@ -51,7 +51,7 @@ struct parent_child *get_relation(tid_t tid, struct thread *t)
   struct list_elem *e;
   for (e = list_begin(&t->children); e != list_end(&t->children); e = list_next(e))
   {
-    struct parent_child *relation = list_entry(e, struct parent_child, elem);
+    struct parent_child *relation = list_entry(e, struct parent_child, list_elem);
     if (relation->tid == tid)
     {
       return relation;
@@ -72,23 +72,32 @@ tid_t process_execute(const char *file_name)
     return TID_ERROR;
   strlcpy(fn_copy, file_name, PGSIZE);
 
+  /*Lab 3*/
+  struct parent_child *relation = (struct parent_child *)malloc(sizeof(struct parent_child));
+  relation->alive_count = 2;
+  lock_init(&relation->lock);
 
-  struct parent_child * relation = malloc(sizeof(struct parent_child));
+  struct exec_info exec_info;
+  exec_info.file_name = fn_copy;
+  exec_info.relation = relation;
+  sema_init(&exec_info.sema, 0);
+
   /* Create a new thread to execute FILE_NAME. */
-  tid = thread_create(file_name, PRI_DEFAULT, start_process, &relation);
+  tid = thread_create(file_name, PRI_DEFAULT, start_process, &exec_info);
   if (tid == TID_ERROR)
   {
     palloc_free_page(fn_copy);
+    free(relation);
     return -1;
   }
 
-
-  relation->tid = tid;
-  relation->exit_status = -1;
-  relation->alive_count = 2;
-  relation->loaded = true;
+  sema_down(&exec_info.sema);
+  if (!exec_info.relation->loaded)
+  {
+    return -1;
+  }
   struct thread *t = thread_current();
-  list_push_back(&t->children, &relation->elem);
+  list_push_back(&t->children, &relation->list_elem);
 
   return tid;
 }
@@ -96,10 +105,9 @@ tid_t process_execute(const char *file_name)
 /* A thread function that loads a user process and starts it
    running. */
 static void
-start_process(void *exec_info)
+start_process(void *aux)
 {
-  struct exec_info *exec_info = exec_info;
-  char *file_name = exec_info->file_name;
+  struct exec_info *exec_info = aux; // lab 3
   struct intr_frame if_;
   bool success;
 
@@ -108,24 +116,21 @@ start_process(void *exec_info)
   if_.gs = if_.fs = if_.es = if_.ds = if_.ss = SEL_UDSEG;
   if_.cs = SEL_UCSEG;
   if_.eflags = FLAG_IF | FLAG_MBS;
-  success = load(file_name, &if_.eip, &if_.esp);
+  success = load(exec_info->file_name, &if_.eip, &if_.esp);
 
-  //get the new thread
+  /*Lab 3*/
   struct thread *t = thread_current();
-  //get the parent thread
   t->relation = exec_info->relation;
   t->relation->loaded = success;
+
   /* If load failed, quit. */
-  palloc_free_page(file_name);
-  if (!success){
-    t->relation->exit_status = -1;
-    sema_up(&t->relation->sema);
+  palloc_free_page(exec_info->file_name);
+  sema_up(&exec_info->sema); // Lab 3
+  if (!success)
+  {
+    t->relation->exit_status = -1; // Lab 3
     thread_exit();
   }
-  sema_up(&t->relation->sema);
-    
-    
-
 
   /* Start the user process by simulating a return from an
      interrupt, implemented by intr_exit (in

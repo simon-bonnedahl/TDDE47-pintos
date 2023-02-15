@@ -15,31 +15,17 @@
 #include "userprog/process.h"
 #include "userprog/pagedir.h"
 
-/*pintos --qemu -p ../../examples/lab1test2 -a test2 -- -q*/
-/*pintos --qemu -p ../../examples/lab1test2 -a test2 -- -q run test2*/
-/*pintos -- rm test2*/
-
 static void syscall_handler(struct intr_frame *);
-
-
-struct file_descriptor
-{
-  int value;
-  struct file *file;
-  struct list_elem elem;
-};
 
 void syscall_init(void)
 {
   intr_register_int(0x30, 3, INTR_ON, syscall_handler, "syscall");
-  
-
 }
 
 static void
 syscall_handler(struct intr_frame *f UNUSED)
 {
-  
+
   int *stack_pointer = f->esp;
   int syscall = *stack_pointer;
   if (!valid(stack_pointer))
@@ -53,7 +39,7 @@ syscall_handler(struct intr_frame *f UNUSED)
   char *fileName;
   const void *buffer;
 
-  printf("syscall: %d \n", syscall);
+  // printf("syscall: %d \n", syscall);
   switch (syscall)
   {
 
@@ -273,7 +259,7 @@ pid_t exec(const char *cmd_line)
   {
     kill();
   }
-  //spawn a new child process
-  
+  // spawn a new child process
+
   return process_execute(cmd_line);
 }

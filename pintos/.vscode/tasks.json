@@ -1,0 +1,217 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Make",
+      "type": "shell",
+      "isBackground": true,
+      "linux": {
+        "command": "cd ${workspaceFolder}/src/threads/ && make && cd ${workspaceFolder}/src/userprog/ && make && cd ${workspaceFolder}/src/examples/ && make "
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "DISK: Wipe",
+      "type": "shell",
+      "isBackground": true,
+      "dependsOn": [],
+      "linux": {
+        "command": "cd ${workspaceFolder}/src/userprog/build && pintos -v -- -f -q"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "DISK: List",
+      "type": "shell",
+      "isBackground": true,
+      "linux": {
+        "command": "cd ${workspaceFolder}/src/userprog/build && pintos -v -- -q ls"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "DISK: Load",
+      "type": "shell",
+      "isBackground": true,
+      "dependsOn": [
+        "Make",
+        "DISK: Wipe",
+      ],
+      "linux": {
+        "command": "bash ${workspaceFolder}/.vscode/loadfile.sh ${workspaceFolder} ${input:files}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "RUN: command",
+      "type": "shell",
+      "isBackground": true,
+      "linux": {
+        "command": "cd ${workspaceFolder}/src/userprog/build && pintos -v -- -q ${input:command}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "LOAD AND RUN: Single",
+      "type": "shell",
+      "isBackground": true,
+      "dependsOn": [
+        "Make",
+        "DISK: Wipe"
+      ],
+      "linux": {
+        "command": "bash ${workspaceFolder}/.vscode/loadfile.sh ${workspaceFolder} ${input:file} && bash ${workspaceFolder}/.vscode/run.sh ${workspaceFolder} ${input:file}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "LOAD AND DEBUG: Single",
+      "type": "shell",
+      "isBackground": true,
+      "dependsOn": [
+        "Make",
+        "DISK: Wipe"
+      ],
+      "linux": {
+        "command": "bash ${workspaceFolder}/.vscode/loadfile.sh ${workspaceFolder} ${input:file} && bash ${workspaceFolder}/.vscode/run.sh ${workspaceFolder} ${input:file} --gdb"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "LOAD AND RUN: Multiple",
+      "type": "shell",
+      "isBackground": true,
+      "dependsOn": [
+        "DISK: Load"
+      ],
+      "linux": {
+        "command": "bash ${workspaceFolder}/.vscode/run.sh ${workspaceFolder} ${input:file}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "LOAD AND DEBUG: Multiple",
+      "type": "shell",
+      "isBackground": true,
+      "dependsOn": [
+        "DISK: Load"
+      ],
+      "linux": {
+        "command": "bash ${workspaceFolder}/.vscode/run.sh ${workspaceFolder} ${input:file} --gdb"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "RUN: program",
+      "type": "shell",
+      "isBackground": true,
+      "dependsOn": [],
+      "linux": {
+        "command": "bash ${workspaceFolder}/.vscode/run.sh ${workspaceFolder} ${input:file} --gdb"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "DEBUG: program",
+      "type": "shell",
+      "isBackground": true,
+      "dependsOn": [],
+      "linux": {
+        "command": "bash ${workspaceFolder}/.vscode/run.sh ${workspaceFolder} ${input:file} --gdb"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "RUN: lab3test2",
+      "type": "shell",
+      "isBackground": true,
+      "dependsOn": [
+        "Make",
+        "DISK: Wipe",
+      ],
+      "linux": {
+        "command": "bash ./.vscode/loadfile.sh ${workspaceFolder} lab3test2 printf && bash ./.vscode/run.sh ${workspaceFolder} lab3test2"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "RUN: alarm",
+      "type": "shell",
+      "isBackground": true,
+      "dependsOn": [
+        "Make"
+      ],
+      "linux": {
+        "command": "cd ${workspaceFolder}/src/threads/build && pintos -v -- run ${input:alarm}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "RUN: lab2test",
+      "type": "shell",
+      "isBackground": true,
+      "dependsOn": [
+        "Make"
+      ],
+      "linux": {
+        "command": "cd ${workspaceFolder}/src/threads/build && make SIMULATOR=--qemu check"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "MEMORY LEAK CHECK",
+      "type": "shell",
+      "isBackground": true,
+      "dependsOn": [
+        "Make"
+      ],
+      "linux": {
+        "command": "firefox https://www.youtube.com/watch?v=xvFZjo5PgG0"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "UPDATE SCRIPTS",
+      "type": "shell",
+      "isBackground": true,
+      "dependsOn": [],
+      "linux": {
+        "command": "git clone git@gitlab.liu.se:marka727/pintos-vscode.git && cp pintos-vscode/.vscode/ . -r && rm pintos-vscode -r -f && code . "
+      },
+      "problemMatcher": []
+    }
+  ],
+  "inputs": [
+    {
+      "id": "file",
+      "description": "file in examples",
+      "default": "printf",
+      "type": "promptString"
+    },
+    {
+      "id": "files",
+      "description": "files in examples, seperate with spaces",
+      "default": "lab3test2 printf",
+      "type": "promptString"
+    },
+    {
+      "id": "command",
+      "description": "command to run in pintos",
+      "default": "ls",
+      "type": "promptString"
+    },
+    {
+      "type": "pickString",
+      "id": "alarm",
+      "description": "Which alarm test to run?",
+      "options": [
+        "alarm-single",
+        "alarm-multiple",
+        "alarm-simultaneous",
+        "alarm-zero",
+        "alarm-negative",
+      ],
+      "default": "alarm-single"
+    }
+  ]
+}

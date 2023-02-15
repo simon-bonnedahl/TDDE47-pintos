@@ -155,7 +155,7 @@ void thread_print_stats(void)
    PRIORITY, but no actual priority scheduling is implemented.
    Priority scheduling is the goal of Problem 1-3. */
 tid_t thread_create(const char *name, int priority,
-                    thread_func *function, void *relation)
+                    thread_func *function, void *exec_info)
 {
   struct thread *t;
   struct kernel_thread_frame *kf;
@@ -173,14 +173,6 @@ tid_t thread_create(const char *name, int priority,
   /* Initialize thread. */
   init_thread(t, name, priority);
   tid = t->tid = allocate_tid();
-
-  t->fd_count = 2;        // lab1
-  list_init(&t->fd_list); // lab1
-
-  list_init(&t->children); // lab3
-  struct exec_info *exec_info = malloc(sizeof(struct exec_info));
-  exec_info->relation = relation;
-  exec_info->file_name = name;
 
   /* Stack frame for kernel_thread(). */
   kf = alloc_frame(t, sizeof *kf);
@@ -278,6 +270,13 @@ void thread_exit(void)
 
 #ifdef USERPROG
   process_exit();
+  // Loop through all the open files and close them
+  struct list_elem *e;
+  for (e = list_begin(&thread_current()->fd_list); e != list_end(&thread_current()->fd_list); e = list_next(e))
+  {
+    struct file_descriptor *fd = list_entry(e, struct file_descriptor, elem);
+    file_close(fd->file);
+  }
 #endif
 
   /* Just set our status to dying and schedule another process.
@@ -433,6 +432,10 @@ init_thread(struct thread *t, const char *name, int priority)
   t->stack = (uint8_t *)t + PGSIZE;
   t->priority = priority;
   t->magic = THREAD_MAGIC;
+
+  t->fd_count = 2;         // lab1
+  list_init(&t->fd_list);  // lab1
+  list_init(&t->children); // lab3
 }
 
 /* Allocates a SIZE-byte frame at the top of thread T's stack and

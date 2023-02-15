@@ -4,6 +4,7 @@
 #include <debug.h>
 #include <list.h>
 #include <stdint.h>
+#include "threads/synch.h"
 
 /* States in a thread's life cycle. */
 enum thread_status
@@ -96,25 +97,29 @@ struct thread
 
    unsigned fd_count;   // Lab 1
    struct list fd_list; // Lab 1
+   struct file_descriptor
+   {
+      int value;
+      struct file *file;
+      struct list_elem elem;
+   };
 
    /*Lab 2*/
    int64_t wakeup_time;         /* Time to wake up */
    struct list_elem sleep_elem; /* List element for sleep list */
 
-
-
    /*Lab 3*/
-  struct parent_child {
-   int alive_count;
-   int exit_status;
+   struct parent_child
+   {
+      int alive_count;
+      int exit_status;
 
-   tid_t tid;
-   bool loaded;
-   struct lock lock;
-   struct list_elem elem;
-
-};
-   struct list children; /* List of children */
+      tid_t tid;
+      bool loaded;
+      struct lock lock;
+      struct list_elem list_elem;
+   };
+   struct list children;          /* List of children */
    struct parent_child *relation; /* Parent thread */
 
 #ifdef USERPROG
