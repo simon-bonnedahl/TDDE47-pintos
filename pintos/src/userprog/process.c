@@ -60,6 +60,7 @@ tid_t process_execute(const char *file_name)
 
   /*Lab 3*/
   struct parent_child *relation = (struct parent_child *)malloc(sizeof(struct parent_child));
+  relation->parent_id = thread_current()->tid;
   relation->alive_count = 2;
   lock_init(&relation->lock);
 
@@ -109,6 +110,7 @@ start_process(void *aux)
   /*Lab 3*/
   struct thread *t = thread_current();
   t->parent_relation = exec_info->relation;
+  exec_info->relation->child_id = t->tid;
 
   /* If load failed, quit. */
   palloc_free_page(exec_info->file_name);

@@ -114,7 +114,8 @@ struct thread
       int alive_count;
       int exit_status;
 
-      tid_t tid;
+      tid_t parent_id;
+      tid_t child_id;
       struct lock lock;
       struct list_elem list_elem;
    };
