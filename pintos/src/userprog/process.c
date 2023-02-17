@@ -87,15 +87,17 @@ tid_t process_execute(const char *file_name)
   if (tid == TID_ERROR)
   {
     palloc_free_page(fn_copy);
-    free(relation);
+    free(relation); // lab 3
     return -1;
   }
 
-  sema_down(&exec_info.sema);
+  sema_down(&exec_info.sema); // sema up?
   if (!exec_info.relation->loaded)
   {
+    // free memory?
     return -1;
   }
+  // vad
   struct thread *t = thread_current();
   list_push_back(&t->children, &relation->list_elem);
 
