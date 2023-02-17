@@ -110,18 +110,7 @@ void halt(void)
 void exit(int status)
 {
 
-  struct list_elem *e;
-  struct file_descriptor *file_descriptor;
-  struct thread *t = thread_current();
-  for (e = list_begin(&t->fd_list); e != list_end(&t->fd_list); e = list_next(e))
-  {
-    file_descriptor = list_entry(e, struct file_descriptor, elem);
-    file_close(file_descriptor->file);
-    list_remove(&file_descriptor->elem);
-    free(file_descriptor);
-  }
-
-  printf("%s: exit(%d)", thread_current()->name, status);
+  // printf("%s: exit(%d)", thread_current()->name, status);
   thread_current()->status = status;
   thread_exit();
 }

@@ -46,20 +46,6 @@ represents that both the parent and child has
 exited, and whoever decrements it to 0 should free
 the memory of the shared struct*/
 
-struct parent_child *get_relation(tid_t tid, struct thread *t)
-{
-  struct list_elem *e;
-  for (e = list_begin(&t->children); e != list_end(&t->children); e = list_next(e))
-  {
-    struct parent_child *relation = list_entry(e, struct parent_child, list_elem);
-    if (relation->tid == tid)
-    {
-      return relation;
-    }
-  }
-  return NULL;
-}
-
 tid_t process_execute(const char *file_name)
 {
   char *fn_copy;
@@ -87,17 +73,17 @@ tid_t process_execute(const char *file_name)
   if (tid == TID_ERROR)
   {
     palloc_free_page(fn_copy);
-    free(relation); // lab 3
+    free(relation);
     return -1;
   }
 
-  sema_up(&exec_info.sema); // sema up?
-  if (!exec_info.relation->loaded)
+  sema_down(&exec_info.sema);
+  if (exec_info.relation->exit_status == -1)
   {
-    // free memory?
+    free(relation);
     return -1;
   }
-  // vad
+
   struct thread *t = thread_current();
   list_push_back(&t->children, &relation->list_elem);
 
@@ -122,15 +108,14 @@ start_process(void *aux)
 
   /*Lab 3*/
   struct thread *t = thread_current();
-  t->relation = exec_info->relation;
-  t->relation->loaded = success;
+  t->parent_relation = exec_info->relation;
 
   /* If load failed, quit. */
   palloc_free_page(exec_info->file_name);
   sema_up(&exec_info->sema); // Lab 3
   if (!success)
   {
-    t->relation->exit_status = -1; // Lab 3
+    t->parent_relation->exit_status = -1; // Lab 3
     thread_exit();
   }
 
@@ -170,29 +155,39 @@ void process_exit(void)
 {
 
   struct thread *cur = thread_current();
-  
-  ASSERT(cur->relation != NULL);
-  lock_acquire(&cur->relation->lock);
 
-
-  cur->relation->alive_count--;
-
-  if (cur->relation->alive_count == 0)
+  struct parent_child *relation = cur->parent_relation;
+  if (relation != NULL)
   {
-    free(cur->relation);
-  }
-
-for (struct list_elem *e = list_begin(&cur->children); e != list_end(&cur->children); e = list_next(e))
-  {
-    struct parent_child *relation = list_entry(e, struct parent_child, list_elem);
+    lock_acquire(&relation->lock);
     relation->alive_count--;
     if (relation->alive_count == 0)
     {
       free(relation);
     }
+    else
+    {
+      lock_release(&relation->lock);
+    }
   }
-  lock_release(&cur->relation->lock);
-  
+
+  struct list_elem *e, *next;
+  for (e = list_begin(&cur->children); e = !list_end(&cur->children);
+       e = next)
+  {
+    struct parent_child *relation = list_entry(e, struct parent_child, list_elem);
+    next = list_remove(e);
+    lock_acquire(&relation->lock);
+    relation->alive_count--;
+    if (relation->alive_count == 0)
+    {
+      free(relation);
+    }
+    else
+    {
+      lock_release(&relation->lock);
+    }
+  }
 
   uint32_t *pd;
 

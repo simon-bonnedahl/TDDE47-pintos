@@ -115,15 +115,12 @@ struct thread
       int exit_status;
 
       tid_t tid;
-      tid_t parent_tid;
-      tid_t child_tid;
-
-      bool loaded;
       struct lock lock;
       struct list_elem list_elem;
    };
-   struct list children;          /* List of children */
-   struct parent_child *relation; /* Parent thread */
+
+   struct list children;                 /* List of children */
+   struct parent_child *parent_relation; /* Parent thread */
 
 #ifdef USERPROG
    /* Owned by userprog/process.c. */

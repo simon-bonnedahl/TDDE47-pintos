@@ -7,7 +7,6 @@ FILE4=${5:-null}
 FILE5=${6:-null}
 FILE6=${7:-null}
 
-
 cd $ROOT/src/userprog/build
 echo $FILE1
 if [ -e $EXAMPLES/$FILE1 ]
