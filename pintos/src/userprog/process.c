@@ -91,7 +91,7 @@ tid_t process_execute(const char *file_name)
     return -1;
   }
 
-  sema_down(&exec_info.sema); // sema up?
+  sema_up(&exec_info.sema); // sema up?
   if (!exec_info.relation->loaded)
   {
     // free memory?
@@ -168,7 +168,32 @@ int process_wait(tid_t child_tid UNUSED)
 /* Free the current process's resources. */
 void process_exit(void)
 {
+
   struct thread *cur = thread_current();
+  
+  ASSERT(cur->relation != NULL);
+  lock_acquire(&cur->relation->lock);
+
+
+  cur->relation->alive_count--;
+
+  if (cur->relation->alive_count == 0)
+  {
+    free(cur->relation);
+  }
+
+for (struct list_elem *e = list_begin(&cur->children); e != list_end(&cur->children); e = list_next(e))
+  {
+    struct parent_child *relation = list_entry(e, struct parent_child, list_elem);
+    relation->alive_count--;
+    if (relation->alive_count == 0)
+    {
+      free(relation);
+    }
+  }
+  lock_release(&cur->relation->lock);
+  
+
   uint32_t *pd;
 
   /* Destroy the current process's page directory and switch back

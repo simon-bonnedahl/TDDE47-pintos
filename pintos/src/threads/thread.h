@@ -115,6 +115,9 @@ struct thread
       int exit_status;
 
       tid_t tid;
+      tid_t parent_tid;
+      tid_t child_tid;
+
       bool loaded;
       struct lock lock;
       struct list_elem list_elem;
