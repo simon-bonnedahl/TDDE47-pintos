@@ -1,6 +1,6 @@
 # TDDE47-Pintos
 
-Lab 3 - Complete
+Lab 4 - Not complete
 
-![Tree](lab3.png)
+
 
