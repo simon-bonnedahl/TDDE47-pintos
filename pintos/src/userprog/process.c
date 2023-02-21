@@ -316,6 +316,7 @@ bool load(const char *file_name, void (**eip)(void), void **esp)
 
   /* Set up stack. */
   if (!setup_stack(esp, file_name))
+
   {
     goto done;
   }
@@ -359,9 +360,9 @@ bool load(const char *file_name, void (**eip)(void), void **esp)
     i++;
   }
 #endif
-
+  char * program = **((char***)(*esp + sizeof(void (*)()) + sizeof(int)));
   /* Open executable file. */
-  file = filesys_open(file_name);
+  file = filesys_open(program);
   if (file == NULL)
   {
     printf("load: %s: open failed\n", file_name);
@@ -584,24 +585,66 @@ setup_stack(void **esp, char *file_name)
   if (kpage != NULL)
   {
     success = install_page(((uint8_t *)PHYS_BASE) - PGSIZE, kpage, true);
-    if (success)
+    if (success){
       //*esp = PHYS_BASE - 12;
 
       /*Lab4*/
       *esp = PHYS_BASE;
 
-       //Tokenize the file name into arguments and add them to our argument vector and push them onto the stack
+       //Tokenize the file name into arguments and add them to our argument vector
       for (token = strtok_r(file_name, " ", &save_ptr); token != NULL; token = strtok_r(NULL, " ", &save_ptr))
       {
-        *esp -= strlen(token) + 1;
-        memcpy(*esp, token, strlen(token) + 1);
-        argv[argc] = *esp;
+        argv[argc] = token;
         argc++;
       }
-      //Word align the stack
 
-    else
+      //Add the null pointer to the end of the argument vector
+      argv[argc] = NULL;
+
+      //Push the arguments onto the stack in reverse order
+      for (int i = argc - 1; i >= 0; i--)
+      {
+        unsigned size = strlen(argv[i]) + 1;
+        *esp -= size;
+        memcpy(*esp, argv[i], size);
+        //replace the argument with the address of the argument on the stack
+        argv[i] = *esp;
+      }
+
+
+      //Word align the stack so its address is divisible by 4
+      unsigned word_align = ((unsigned)*esp) % 4;
+      *esp -= word_align; 
+      memset(*esp, 0, word_align);
+
+      
+      //Push the argument pointers onto the stack in reverse order
+      for (int i = argc - 1; i >= 0; i--)
+      {
+        *esp -= sizeof(char *); //replace with 4?
+        
+        memcpy(*esp, &argv[i], sizeof(char *));
+      }
+
+
+
+      //Push argv onto the stack
+      void *addr = *esp;
+      *esp -= sizeof(char **); //replace with 4?
+      memcpy(*esp, &addr, sizeof(char **));
+
+      //Push argc onto the stack
+      *esp -= sizeof(int); //replace with 4?
+      memcpy(*esp, &argc, sizeof(int));
+
+      //Push a fake return address onto the stack
+      *esp -= sizeof(void *); //replace with 4?
+      
+      hex_dump((unsigned)*esp, *esp, PHYS_BASE - *esp, true);
+    }else{
       palloc_free_page(kpage);
+    }
+      
   }
   return success;
 }
