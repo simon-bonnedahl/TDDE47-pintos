@@ -118,8 +118,6 @@ struct thread
       tid_t child_id;
       struct lock lock;
       struct list_elem list_elem;
-      int loaded;
-      struct semaphore wait_sema; //Lab 5
    };
 
    struct list children;                 /* List of children */
