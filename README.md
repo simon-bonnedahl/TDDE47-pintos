@@ -1,6 +1,6 @@
 # TDDE47-Pintos
 
-Lab 5 - Not complete
+Lab 5 - Complete
 
 
 
