@@ -114,8 +114,8 @@ tid_t process_execute(const char *file_name)
 static void
 start_process(void *file_name_)
 {
-  struct exec_info *to_exec = file_name_;
-  char *file_name = to_exec->file_name;
+  struct exec_info *exec_info = file_name_;
+  char *file_name = exec_info->file_name;
   struct intr_frame if_;
   bool success;
 
@@ -128,7 +128,7 @@ start_process(void *file_name_)
 
   /* Load current thread and set its parent relation to value of exec rel */
   struct thread *t = thread_current();
-  t->parent_relation = to_exec->relation;
+  t->parent_relation = exec_info->relation;
 
   /* If load failed, quit. */
   palloc_free_page(file_name);
@@ -137,10 +137,10 @@ start_process(void *file_name_)
   if (!success)
   {
     t->parent_relation->exit_status = -1;
-    sema_up(&to_exec->sema);
+    sema_up(&exec_info->sema);
     thread_exit();
   }
-  sema_up(&to_exec->sema);
+  sema_up(&exec_info->sema);
 
   /* Start the user process by simulating a return from an
      interrupt, implemented by intr_exit (in
@@ -168,36 +168,37 @@ int process_wait(tid_t child_tid)
 {
   struct thread *current_thread = thread_current();
 
-  struct parent_child *child_rel = NULL;
+  bool child_found = false;
+  struct parent_child *relation;
 
   struct list_elem *e;
   for (e = list_begin(&current_thread->children); e != list_end(&current_thread->children);
        e = list_next(e))
   {
-    struct parent_child *relation = list_entry(e, struct parent_child, list_elem);
+     relation = list_entry(e, struct parent_child, list_elem);
 
     if (relation->child_id == child_tid)
     {
-      child_rel = relation;
+      child_found = true;
       break;
     }
   }
 
   int exit_status = -1;
-  if (child_rel != NULL)
+  if (child_found)
   {
-
-    lock_acquire(&child_rel->lock);
-    int alive_count = child_rel->alive_count;
-    lock_release(&child_rel->lock);
+    //Avoid race condition
+    lock_acquire(&relation->lock);
+    int alive_count = relation->alive_count;
+    lock_release(&relation->lock);
 
     if (alive_count == 2)
     {
-      sema_down(&child_rel->wait_sema);
+      sema_down(&relation->wait_sema);
     }
 
-    exit_status = child_rel->exit_status;
-    child_rel->exit_status = -1;
+    exit_status = relation->exit_status;
+    relation->exit_status = -1;
   }
 
   return exit_status;
@@ -653,6 +654,7 @@ setup_stack(void **esp, char *file_name)
       argv[argc] = NULL;
 
       // Push the arguments onto the stack in reverse order
+      //Exlude the null pointer
       for (int i = argc - 1; i >= 0; i--)
       {
         unsigned size = strlen(argv[i]) + 1;

@@ -264,7 +264,7 @@ bool valid_buffer(void *buffer, unsigned size)
   unsigned i;
   for (i = 0; i < size; i++)
   {
-    if (!valid_address(buffer))
+    if (!valid_address(buffer + i))
     {
       return false;
     }
@@ -274,16 +274,14 @@ bool valid_buffer(void *buffer, unsigned size)
 
 bool valid_string(const char *str)
 {
-  if (str == NULL)kill();
-  if(!valid_address(str))kill();
+  if (str == NULL)return false;
+  if(!valid_address(str))return false;
   
   while (*(str++) != '\0') {    
-    if(!valid_address(str))kill();
+    if(!valid_address(str))return false;
   }
+  return true;
 }
-
-
-  
 
 
 void kill()
