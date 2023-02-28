@@ -8,4 +8,4 @@ Every individual lab have a separate branch
 - Lab 2 - Complete
 - Lab 3 - Complete
 - Lab 4 - Complete
-- Lav 5 - Complete
+- Lab 5 - Complete
