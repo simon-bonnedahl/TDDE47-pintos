@@ -275,7 +275,7 @@ void thread_exit(void)
   for (e = list_begin(&thread_current()->fd_list); e != list_end(&thread_current()->fd_list); e = list_next(e))
   {
     struct file_descriptor *fd = list_entry(e, struct file_descriptor, elem);
-    file_close(fd->file);
+    if(fd->file != NULL)file_close(fd->file);
   }
 #endif
 

@@ -45,8 +45,7 @@ decrement it by 1. When the value is 0 it
 represents that both the parent and child has
 exited, and whoever decrements it to 0 should free
 the memory of the shared struct*/
-tid_t
-process_execute (const char *file_name)
+tid_t process_execute(const char *file_name)
 {
   char *fn_copy;
   tid_t tid;
@@ -56,10 +55,10 @@ process_execute (const char *file_name)
   }
   /* Make a copy of FILE_NAME.
      Otherwise there's a race between the caller and load(). */
-  fn_copy = palloc_get_page (0);
+  fn_copy = palloc_get_page(0);
   if (fn_copy == NULL)
     return TID_ERROR;
-  strlcpy (fn_copy, file_name, PGSIZE); //STRING COPY, fn_copy as dest
+  strlcpy(fn_copy, file_name, PGSIZE); // STRING COPY, fn_copy as dest
 
   /* Init exec_info */
   struct exec_info exec;
@@ -67,26 +66,25 @@ process_execute (const char *file_name)
   sema_init(&exec.sema, 0);
 
   /* Init relationship */
-  struct parent_child *relation = (struct parent_child*)malloc(sizeof(struct parent_child));
+  struct parent_child *relation = (struct parent_child *)malloc(sizeof(struct parent_child));
   relation->alive_count = 2;
   lock_init(&relation->lock);
-  sema_init(&relation->wait_sema,0);
+  sema_init(&relation->wait_sema, 0);
 
   /* Add current relation to children and to exec */
   struct thread *parent = thread_current();
   exec.relation = relation;
 
-
   /* Create a new thread to execute FILE_NAME. */
-  //LAB 5
+  // LAB 5
   char *s;
-  s = palloc_get_page (0);
+  s = palloc_get_page(0);
   if (s == NULL)
     return TID_ERROR;
-  strlcpy (s, file_name, PGSIZE);
+  strlcpy(s, file_name, PGSIZE);
 
   char *token, *save_ptr;
-  char* input_token;
+  char *input_token;
 
   input_token = strtok_r(s, " ", &save_ptr);
   tid = thread_create(input_token, PRI_DEFAULT, start_process, &exec);
@@ -94,19 +92,19 @@ process_execute (const char *file_name)
   /* Wait for child to load */
 
   if (tid == TID_ERROR)
-    {
-      palloc_free_page (fn_copy);
-      free(relation);
-      return tid;
-    }
+  {
+    palloc_free_page(fn_copy);
+    free(relation);
+    return tid;
+  }
   sema_down(&exec.sema);
   exec.relation->child_id = tid;
   if (!exec.relation->loaded)
-    {
-      tid = TID_ERROR;
-      free(relation);
-      return tid;
-    }
+  {
+    tid = TID_ERROR;
+    free(relation);
+    return tid;
+  }
   list_push_back(&parent->children, &relation->list_elem);
   return tid;
 }
@@ -114,7 +112,7 @@ process_execute (const char *file_name)
 /* A thread function that loads a user process and starts it
    running. */
 static void
-start_process (void *file_name_)
+start_process(void *file_name_)
 {
   struct exec_info *to_exec = file_name_;
   char *file_name = to_exec->file_name;
@@ -122,27 +120,27 @@ start_process (void *file_name_)
   bool success;
 
   /* Initialize interrupt frame and load executable. */
-  memset (&if_, 0, sizeof if_);
+  memset(&if_, 0, sizeof if_);
   if_.gs = if_.fs = if_.es = if_.ds = if_.ss = SEL_UDSEG;
   if_.cs = SEL_UCSEG;
   if_.eflags = FLAG_IF | FLAG_MBS;
-  success = load (file_name, &if_.eip, &if_.esp);
+  success = load(file_name, &if_.eip, &if_.esp);
 
   /* Load current thread and set its parent relation to value of exec rel */
   struct thread *t = thread_current();
   t->parent_relation = to_exec->relation;
 
   /* If load failed, quit. */
-  palloc_free_page (file_name);
+  palloc_free_page(file_name);
 
   t->parent_relation->loaded = success;
   if (!success)
-   {
-     t->parent_relation->exit_status = -1;
-     sema_up(&to_exec->sema);
-     thread_exit ();
-   }
-   sema_up(&to_exec->sema);
+  {
+    t->parent_relation->exit_status = -1;
+    sema_up(&to_exec->sema);
+    thread_exit();
+  }
+  sema_up(&to_exec->sema);
 
   /* Start the user process by simulating a return from an
      interrupt, implemented by intr_exit (in
@@ -150,8 +148,11 @@ start_process (void *file_name_)
      arguments on the stack in the form of a `struct intr_frame',
      we just point the stack pointer (%esp) to our stack frame
      and jump to it. */
-  asm volatile ("movl %0, %%esp; jmp intr_exit" : : "g" (&if_) : "memory");
-  NOT_REACHED ();
+  asm volatile("movl %0, %%esp; jmp intr_exit"
+               :
+               : "g"(&if_)
+               : "memory");
+  NOT_REACHED();
 }
 
 /* Waits for thread TID to die and returns its exit status.  If
@@ -163,34 +164,36 @@ start_process (void *file_name_)
 
    This function will be implemented in problem 2-2.  For now, it
    does nothing. */
-int
-process_wait (tid_t child_tid)
+int process_wait(tid_t child_tid)
 {
   struct thread *current_thread = thread_current();
 
   struct parent_child *child_rel = NULL;
 
   struct list_elem *e;
-  for (e = list_begin (&current_thread->children); e != list_end (&current_thread->children);
-   e = list_next (e)) {
-    struct parent_child *relation = list_entry (e, struct parent_child, list_elem);
+  for (e = list_begin(&current_thread->children); e != list_end(&current_thread->children);
+       e = list_next(e))
+  {
+    struct parent_child *relation = list_entry(e, struct parent_child, list_elem);
 
-    if (relation->child_id == child_tid) {
+    if (relation->child_id == child_tid)
+    {
       child_rel = relation;
       break;
     }
   }
 
   int exit_status = -1;
-  if (child_rel != NULL) {
+  if (child_rel != NULL)
+  {
 
     lock_acquire(&child_rel->lock);
     int alive_count = child_rel->alive_count;
     lock_release(&child_rel->lock);
 
-    if (alive_count == 2){
+    if (alive_count == 2)
+    {
       sema_down(&child_rel->wait_sema);
-
     }
 
     exit_status = child_rel->exit_status;
@@ -198,22 +201,20 @@ process_wait (tid_t child_tid)
   }
 
   return exit_status;
-      }
+}
 
 /* Free the current process's resources. */
-void
-process_exit (void)
+void process_exit(void)
 {
-  struct thread *cur = thread_current ();
+  struct thread *cur = thread_current();
   uint32_t *pd;
 
-  /* Parent relationship */
   struct parent_child *relation = cur->parent_relation;
   if (relation != NULL)
   {
     lock_acquire(&relation->lock);
     relation->alive_count--;
-    if(relation->alive_count == 0)
+    if (relation->alive_count == 0)
     {
       free(relation);
     }
@@ -226,41 +227,40 @@ process_exit (void)
 
   /* Children in list relationship */
   struct list_elem *e, *next;
-  for (e = list_begin (&cur->children); e =! list_end(&cur->children);
-        e = next)
-        {
-          struct parent_child *rel = list_entry(e, struct parent_child, list_elem);
-          next = list_remove(e);
-          lock_acquire(&rel->lock);
-          rel->alive_count--;
-          if (rel->alive_count == 0)
-          {
-            list_remove(e);
-            free(rel);
-          }
-          else
-          {
-            lock_release(&rel->lock);
-          }
-        }
+  for (e = list_begin(&cur->children); e = !list_end(&cur->children);
+       e = next)
+  {
+    struct parent_child *child = list_entry(e, struct parent_child, list_elem);
+    next = list_remove(e);
+    lock_acquire(&child->lock);
+    child->alive_count--;
+    if (child->alive_count == 0)
+    {
+      list_remove(e);
+      free(child);
+    }
+    else
+    {
+      lock_release(&child->lock);
+    }
+  }
   /* Destroy the current process's page directory and switch back
      to the kernel-only page directory. */
   pd = cur->pagedir;
   if (pd != NULL)
-    {
-      /* Correct ordering here is crucial.  We must set
-         cur->pagedir to NULL before switching page directories,
-         so that a timer interrupt can't switch back to the
-         process page directory.  We must activate the base page
-         directory before destroying the process's page
-         directory, or our active page directory will be one
-         that's been freed (and cleared). */
-      cur->pagedir = NULL;
-      pagedir_activate (NULL);
-      pagedir_destroy (pd);
-    }
+  {
+    /* Correct ordering here is crucial.  We must set
+       cur->pagedir to NULL before switching page directories,
+       so that a timer interrupt can't switch back to the
+       process page directory.  We must activate the base page
+       directory before destroying the process's page
+       directory, or our active page directory will be one
+       that's been freed (and cleared). */
+    cur->pagedir = NULL;
+    pagedir_activate(NULL);
+    pagedir_destroy(pd);
+  }
 }
-
 
 /* Sets up the CPU for running user code in the current
    thread.
@@ -375,7 +375,7 @@ bool load(const char *file_name, void (**eip)(void), void **esp)
   /* Uncomment the following line to print some debug
     information. This will be useful when you debug the program
     stack.*/
-//#define STACK_DEBUG ;
+  // #define STACK_DEBUG ;
 
 #ifdef STACK_DEBUG
   printf("*esp is %p\nstack contents:\n", *esp);
@@ -648,9 +648,8 @@ setup_stack(void **esp, char *file_name)
       {
         argv[argc] = token;
         argc++;
-      }
-
-      // Add the null pointer to the end of the argument vector
+         }
+      
       argv[argc] = NULL;
 
       // Push the arguments onto the stack in reverse order
@@ -668,8 +667,9 @@ setup_stack(void **esp, char *file_name)
       *esp -= word_align;
       memset(*esp, 0, word_align);
 
-      // Push the argument pointers onto the stack in reverse order
-      for (int i = argc - 1; i >= 0; i--)
+      // Push the argument pointers onto the stack in reverse order 
+      //Lab 5: include the null pointer to pass arg tests
+      for (int i = argc; i >= 0; i--)
       {
         *esp -= sizeof(char *); // replace with 4?
 

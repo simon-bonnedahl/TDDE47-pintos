@@ -293,12 +293,6 @@ void kill()
 
 pid_t exec(const char *cmd_line)
 {
-  if (cmd_line == NULL || !is_user_vaddr(cmd_line))
-  {
-    kill();
-  }
-  // spawn a new child process
-
   return process_execute(cmd_line);
 }
 
