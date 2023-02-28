@@ -15,9 +15,14 @@ int read(int fd, void *buffer, unsigned size);
 int write(int fd, const void *buffer, unsigned size);
 void close(int fd);
 pid_t exec(const char *cmd_line);
+int wait(pid_t pid);
 struct file_descriptor * get_file_descriptor (int fd);
-bool valid(void *vaddr);
+bool valid_address(void *vaddr);
+bool valid_string(const char *str);
+bool valid_buffer(void *buffer, unsigned size);
 void kill();
+
+
 
 //declare a variable that tracks the amount of open files
 //#define int OPEN_FILES = 2;

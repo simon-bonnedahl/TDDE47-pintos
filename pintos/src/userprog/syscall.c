@@ -25,11 +25,10 @@ void syscall_init(void)
 static void
 syscall_handler(struct intr_frame *f UNUSED)
 {
-
+  if (!valid_address(f->esp))
+    kill();
   int *stack_pointer = f->esp;
   int syscall = *stack_pointer;
-  if (!valid(stack_pointer))
-    kill();
 
   // hex_dump(stack_pointer, stack_pointer, 128, true);
 
@@ -37,9 +36,11 @@ syscall_handler(struct intr_frame *f UNUSED)
   int fileDescriptor;
   unsigned fileSize;
   char *fileName;
+  char *command_line;
   const void *buffer;
+  pid_t pid;
 
-  printf("syscall: %d \n", syscall);
+  // printf("syscall: %d \n", syscall);
   switch (syscall)
   {
 
@@ -48,55 +49,75 @@ syscall_handler(struct intr_frame *f UNUSED)
     break;
 
   case SYS_EXIT:
+  if(!valid_address(f->esp + 4))kill();
     status = *(int *)(f->esp + 4);
     exit(status);
     break;
 
   case SYS_WRITE:
     // 3 arguments
+    if(!valid_address(f->esp + 4))kill();
+    if(!valid_address(f->esp + 8))kill();
+    if(!valid_address(f->esp + 12))kill();
     fileDescriptor = *(int *)(f->esp + 4);
     buffer = *(void **)(f->esp + 8);
     fileSize = *(unsigned *)(f->esp + 12);
-
+    if(!valid_buffer(buffer, fileSize))kill();
     // hex_dump(f->esp+8, f->esp+8, 64, true);
     f->eax = write(fileDescriptor, buffer, fileSize);
 
     break;
   case SYS_CREATE:
     // 2 arguments
+    if(!valid_address(f->esp + 4))kill();
+    if(!valid_address(f->esp + 8))kill();
     fileName = *(char **)(f->esp + 4);
     fileSize = *(unsigned *)(f->esp + 8);
+    if(!valid_string(fileName))kill();
     f->eax = create(fileName, fileSize);
 
     break;
   case SYS_OPEN:
     // 1 argument
+    if(!valid_address(f->esp + 4))kill();
     fileName = *(char **)(f->esp + 4);
+    if(!valid_string(fileName))kill();
     f->eax = open(fileName);
     break;
   case SYS_CLOSE:
     // 1 argument
+    if(!valid_address(f->esp + 4))kill();
     fileDescriptor = *(int *)(f->esp + 4);
     close(fileDescriptor);
     break;
 
   case SYS_READ:
-
+    if(!valid_address(f->esp + 4))kill();
+    if(!valid_address(f->esp + 8))kill();
+    if(!valid_address(f->esp + 12))kill();
     // 3 arguments
     fileDescriptor = *(int *)(f->esp + 4);
     buffer = *(void **)(f->esp + 8);
     fileSize = *(unsigned *)(f->esp + 12);
-
+    if(!valid_buffer(buffer, fileSize))kill();
     f->eax = read(fileDescriptor, buffer, fileSize);
     break;
   case SYS_EXEC:
     // 1 argument
-    fileName = *(char **)(f->esp + 4);
-    f->eax = exec(fileName);
+    if(!valid_address(f->esp + 4))kill();
+    command_line = *(char **)(f->esp + 4);
+    if(!valid_string(command_line))kill();
+    f->eax = exec(command_line);
+    break;
+  case SYS_WAIT:
+    // 1 argument
+    if(!valid_address(f->esp + 4))kill();
+    pid = *(int *)(f->esp + 4);
+    f->eax = wait(pid);
     break;
 
   default:
-    printf("Unknown system call!");
+    //printf("Unknown system call!");
     kill();
     break;
   }
@@ -109,9 +130,10 @@ void halt(void)
 
 void exit(int status)
 {
+  thread_current()->parent_relation->exit_status = status;
 
-  // printf("%s: exit(%d)", thread_current()->name, status);
-  thread_current()->status = status;
+  printf("%s: exit(%d)\n", thread_current()->name, status);
+
   thread_exit();
 }
 
@@ -232,10 +254,37 @@ struct file_descriptor *get_file_descriptor(int fd)
   return NULL;
 }
 
-bool valid(void *vaddr)
+bool valid_address(void *vaddr)
 {
   return (is_user_vaddr(vaddr) && pagedir_get_page(thread_current()->pagedir, vaddr) != NULL);
 }
+
+bool valid_buffer(void *buffer, unsigned size)
+{
+  unsigned i;
+  for (i = 0; i < size; i++)
+  {
+    if (!valid_address(buffer))
+    {
+      return false;
+    }
+  }
+  return true;
+}
+
+bool valid_string(const char *str)
+{
+  if (str == NULL)kill();
+  if(!valid_address(str))kill();
+  
+  while (*(str++) != '\0') {    
+    if(!valid_address(str))kill();
+  }
+}
+
+
+  
+
 
 void kill()
 {
@@ -251,4 +300,9 @@ pid_t exec(const char *cmd_line)
   // spawn a new child process
 
   return process_execute(cmd_line);
+}
+
+int wait(pid_t pid)
+{
+  return process_wait(pid);
 }
