@@ -21,6 +21,10 @@ bool valid_address(void *vaddr);
 bool valid_string(const char *str);
 bool valid_buffer(void *buffer, unsigned size);
 void kill();
+void seek(int fd, unsigned position);
+unsigned tell(int fd);
+int filesize(int fd);
+bool remove(const char *file, unsigned initial_size);
 
 
 

@@ -298,3 +298,37 @@ int wait(pid_t pid)
 {
   return process_wait(pid);
 }
+void seek(int fd, unsigned position)
+{
+  struct file_descriptor *file_descriptor = get_file_descriptor(fd);
+  if (file_descriptor == NULL)
+  {
+    kill();
+  }
+  file_seek(file_descriptor->file, position);
+}
+
+unsigned tell(int fd)
+{
+  struct file_descriptor *file_descriptor = get_file_descriptor(fd);
+  if (file_descriptor == NULL)
+  {
+    kill();
+  }
+  return file_tell(file_descriptor->file);
+}
+
+int filesize(int fd)
+{
+  struct file_descriptor *file_descriptor = get_file_descriptor(fd);
+  if (file_descriptor == NULL)
+  {
+    kill();
+  }
+  return file_length(file_descriptor->file);
+}
+
+int remove(const char *file)
+{
+  return filesys_remove(file);
+}
