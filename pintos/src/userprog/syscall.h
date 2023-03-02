@@ -24,7 +24,7 @@ void kill();
 void seek(int fd, unsigned position);
 unsigned tell(int fd);
 int filesize(int fd);
-bool remove(const char *file, unsigned initial_size);
+bool remove(const char *file_name);
 
 
 

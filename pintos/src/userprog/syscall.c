@@ -298,6 +298,7 @@ int wait(pid_t pid)
 {
   return process_wait(pid);
 }
+
 void seek(int fd, unsigned position)
 {
   struct file_descriptor *file_descriptor = get_file_descriptor(fd);
@@ -328,7 +329,7 @@ int filesize(int fd)
   return file_length(file_descriptor->file);
 }
 
-int remove(const char *file)
+bool remove(const char *file_name)
 {
-  return filesys_remove(file);
+  return filesys_remove(file_name);
 }
