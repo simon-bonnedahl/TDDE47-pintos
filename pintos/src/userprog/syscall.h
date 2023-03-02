@@ -20,11 +20,13 @@ struct file_descriptor * get_file_descriptor (int fd);
 bool valid_address(void *vaddr);
 bool valid_string(const char *str);
 bool valid_buffer(void *buffer, unsigned size);
+bool valid_fd(int fd);
 void kill();
 void seek(int fd, unsigned position);
 unsigned tell(int fd);
 int filesize(int fd);
 bool remove(const char *file_name);
+
 
 
 

@@ -7,9 +7,14 @@
 #include "filesys/inode.h"
 #include "filesys/directory.h"
 #include "devices/disk.h"
+#include "threads/synch.h"
+
 
 /* The disk that contains the file system. */
 struct disk *filesys_disk;
+
+struct lock filesys_lock; //lab 6
+
 
 static void do_format (void);
 
@@ -24,6 +29,7 @@ filesys_init (bool format)
 
   inode_init ();
   free_map_init ();
+  lock_init(&filesys_lock); //lab 6
 
   if (format) 
     do_format ();
@@ -46,6 +52,7 @@ filesys_done (void)
 bool
 filesys_create (const char *name, off_t initial_size) 
 {
+  lock_acquire(&filesys_lock); //lab 6
   disk_sector_t inode_sector = 0;
   struct dir *dir = dir_open_root ();
   bool success = (dir != NULL
@@ -55,6 +62,7 @@ filesys_create (const char *name, off_t initial_size)
   if (!success && inode_sector != 0) 
     free_map_release (inode_sector, 1);
   dir_close (dir);
+  lock_release(&filesys_lock); //lab 6
 
   return success;
 }
@@ -67,12 +75,14 @@ filesys_create (const char *name, off_t initial_size)
 struct file *
 filesys_open (const char *name)
 {
+  lock_acquire(&filesys_lock); //lab 6
   struct dir *dir = dir_open_root ();
   struct inode *inode = NULL;
 
   if (dir != NULL)
     dir_lookup (dir, name, &inode);
   dir_close (dir);
+  lock_release(&filesys_lock); //lab 6
 
   return file_open (inode);
 }
@@ -84,9 +94,11 @@ filesys_open (const char *name)
 bool
 filesys_remove (const char *name) 
 {
+  lock_acquire(&filesys_lock); //lab 6
   struct dir *dir = dir_open_root ();
   bool success = dir != NULL && dir_remove (dir, name);
   dir_close (dir); 
+  lock_release(&filesys_lock); //lab 6
 
   return success;
 }

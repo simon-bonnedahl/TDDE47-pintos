@@ -115,6 +115,35 @@ syscall_handler(struct intr_frame *f UNUSED)
     pid = *(int *)(f->esp + 4);
     f->eax = wait(pid);
     break;
+  
+  case SYS_REMOVE:
+    // 1 argument
+    if(!valid_address(f->esp + 4))kill();
+    fileName = *(char **)(f->esp + 4);
+    if(!valid_string(fileName))kill();
+    f->eax = remove(fileName);
+    break;
+  case SYS_FILESIZE:
+    // 1 argument
+    if(!valid_address(f->esp + 4))kill();
+    fileDescriptor = *(int *)(f->esp + 4);
+    f->eax = filesize(fileDescriptor);
+    break;
+  case SYS_SEEK:
+    // 2 arguments
+    if(!valid_address(f->esp + 4))kill();
+    if(!valid_address(f->esp + 8))kill();
+    fileDescriptor = *(int *)(f->esp + 4);
+    fileSize = *(unsigned *)(f->esp + 8);
+    seek(fileDescriptor, fileSize);
+    break;
+  case SYS_TELL:
+    // 1 argument
+    if(!valid_address(f->esp + 4))kill();
+    fileDescriptor = *(int *)(f->esp + 4);
+    f->eax = tell(fileDescriptor);
+    break;
+  
 
   default:
     //printf("Unknown system call!");
@@ -139,12 +168,6 @@ void exit(int status)
 
 bool create(const char *filename, unsigned initial_size)
 {
-
-  if (filename == NULL || !is_user_vaddr(filename))
-  {
-    kill();
-  }
-
   return filesys_create(filename, initial_size);
 }
 
@@ -170,36 +193,29 @@ void close(int fd)
 
   if (fd == 0 || fd == 1)
   {
-    kill();
+    return -1;
   }
   struct file_descriptor *file_descriptor = get_file_descriptor(fd);
   if (file_descriptor == NULL)
   {
-    kill();
+    
+    return -1;
   }
 
   file_close(file_descriptor->file);
   list_remove(&file_descriptor->elem);
-  // free(file_descriptor); Behövs detta?
 }
 
 int read(int fd, void *buffer, unsigned size)
 {
 
-  if (fd == 0)
-  {
-    int len = 0;
-    while (len < size)
-    {
-      char c = input_getc();
-      if (c == '\0')
-      {
-        break;
-      }
-      len++;
+  if (fd == 0){
+    for(int i = 0; i < size; i++) {
+      ((uint8_t*)buffer)[i] = input_getc();
     }
-    return len;
+    return size;
   }
+
 
   struct file_descriptor *file_descriptor = get_file_descriptor(fd);
   if (file_descriptor == NULL)
@@ -207,17 +223,12 @@ int read(int fd, void *buffer, unsigned size)
   return file_read(file_descriptor->file, buffer, size);
 }
 
+
 int write(int fd, const void *buffer, unsigned size)
 {
   // validate arguments
-  if (buffer == NULL || !is_user_vaddr(buffer))
-  {
-    kill();
-  }
-  if (fd == 0)
-  {
-    kill();
-  }
+  if(!valid_fd(fd) || fd == 0)return -1;
+  if(size < 1 )return 0;
 
   if (fd == 1)
   {
@@ -284,6 +295,18 @@ bool valid_string(const char *str)
 }
 
 
+bool
+valid_fd(int fd)
+{
+  if(fd < 0 || fd >= 129) {
+    return false;
+  }
+  else {
+    return true;
+  }
+}
+
+
 void kill()
 {
   exit(-1);
@@ -299,34 +322,42 @@ int wait(pid_t pid)
   return process_wait(pid);
 }
 
-void seek(int fd, unsigned position)
+void
+seek(int fd, unsigned position)
 {
+
+
   struct file_descriptor *file_descriptor = get_file_descriptor(fd);
-  if (file_descriptor == NULL)
-  {
-    kill();
+  if(file_descriptor == NULL)return -1;
+  struct file *file = file_descriptor->file;
+  
+  if (file == NULL)return -1;
+
+  if(position <= file_length(file)){
+    file_seek(file, position);
+  } else {
+    file_seek(file, file_length(file));
   }
-  file_seek(file_descriptor->file, position);
 }
+
 
 unsigned tell(int fd)
 {
   struct file_descriptor *file_descriptor = get_file_descriptor(fd);
-  if (file_descriptor == NULL)
-  {
-    kill();
-  }
-  return file_tell(file_descriptor->file);
+  if (file_descriptor == NULL)return -1;
+  struct file *file = file_descriptor->file;
+  if (file == NULL)return -1;
+  return file_tell(file);
 }
 
 int filesize(int fd)
 {
   struct file_descriptor *file_descriptor = get_file_descriptor(fd);
-  if (file_descriptor == NULL)
-  {
-    kill();
-  }
-  return file_length(file_descriptor->file);
+  if (file_descriptor == NULL)return -1;
+  struct file *file = file_descriptor->file;
+  if (file == NULL)return -1;
+
+  return file_length(file);
 }
 
 bool remove(const char *file_name)

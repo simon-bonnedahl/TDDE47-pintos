@@ -86,6 +86,7 @@ bool
 inode_create (disk_sector_t sector, off_t length)
 {
 
+  lock_acquire(&inode_lock);
   struct inode_disk *disk_inode = NULL;
   bool success = false;
 
@@ -95,7 +96,6 @@ inode_create (disk_sector_t sector, off_t length)
      one sector in size, and you should fix that. */
   ASSERT (sizeof *disk_inode == DISK_SECTOR_SIZE);
 
-  lock_acquire(&inode_lock);
 
   //Critical Section
   disk_inode = calloc (1, sizeof *disk_inode);
@@ -167,7 +167,7 @@ inode_open (disk_sector_t sector)
   inode->deny_write_cnt = 0;
   inode->removed = false;
 
-  	  inode->reader_cnt = 0;
+  inode->reader_cnt = 0;
   sema_init(&inode->resource_access,1);
   sema_init(&inode->reader_cnt_access,1);
   sema_init(&inode->service_queue,1);
@@ -185,10 +185,10 @@ inode_reopen (struct inode *inode)
 {
   if (inode != NULL) 
     {
-      lock_acquire(&inode_lock);
+      lock_acquire(&inode->inode_access);
       ASSERT(inode->open_cnt != 0);
       inode->open_cnt++;    //Critical Section
-      lock_release(&inode_lock);
+      lock_release(&inode->inode_access);
     }
   return inode;
 }
@@ -238,9 +238,9 @@ void
 inode_remove (struct inode *inode) 
 {
   ASSERT (inode != NULL);
-  lock_acquire(&inode_lock);
+  lock_acquire(&inode->inode_access);
   inode->removed = true;  //Critical Section
-  lock_release(&inode_lock);
+  lock_release(&inode->inode_access);
 }
 
 /* Reads SIZE bytes from INODE into BUFFER, starting at position OFFSET.
@@ -249,11 +249,8 @@ inode_remove (struct inode *inode)
 off_t
 inode_read_at (struct inode *inode, void *buffer_, off_t size, off_t offset) 
 {
-  uint8_t *buffer = buffer_;
-  off_t bytes_read = 0;
-  uint8_t *bounce = NULL;
 
-  /*Lab 6 - Readers-writers third solution https://en.wikipedia.org/wiki/Readers%E2%80%93writers_problem */
+    /*Lab 6 - Readers-writers third solution https://en.wikipedia.org/wiki/Readers%E2%80%93writers_problem */
   sema_down(&inode->service_queue);       
   sema_down(&inode->reader_cnt_access);   
   inode->reader_cnt++;                    
@@ -261,7 +258,14 @@ inode_read_at (struct inode *inode, void *buffer_, off_t size, off_t offset)
     sema_down(&inode->resource_access);  
   }
   sema_up(&inode->reader_cnt_access);     
-  sema_up(&inode->service_queue);        
+  sema_up(&inode->service_queue);   
+
+
+  uint8_t *buffer = buffer_;
+  off_t bytes_read = 0;
+  uint8_t *bounce = NULL;
+
+     
 
   while (size > 0) 
     {
@@ -325,15 +329,12 @@ off_t
 inode_write_at (struct inode *inode, const void *buffer_, off_t size,
                 off_t offset) 
 {
+  /* Lab 6 - Readers-writers alg */
+  sema_down(&inode->resource_access);        
+
   const uint8_t *buffer = buffer_;
   off_t bytes_written = 0;
   uint8_t *bounce = NULL;
-
-  /* Lab 6 - Readers-writers alg */
-
-  sema_down(&inode->service_queue);      //wat   
-  sema_down(&inode->resource_access);        
-  sema_up(&inode->service_queue);        //wat   
 
   if (inode->deny_write_cnt){
     sema_up(&inode->resource_access);        
