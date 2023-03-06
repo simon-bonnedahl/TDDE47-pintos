@@ -38,6 +38,7 @@ syscall_handler(struct intr_frame *f UNUSED)
   char *fileName;
   char *command_line;
   const void *buffer;
+  int position;
   pid_t pid;
 
   // printf("syscall: %d \n", syscall);
@@ -134,8 +135,8 @@ syscall_handler(struct intr_frame *f UNUSED)
     if(!valid_address(f->esp + 4))kill();
     if(!valid_address(f->esp + 8))kill();
     fileDescriptor = *(int *)(f->esp + 4);
-    fileSize = *(unsigned *)(f->esp + 8);
-    seek(fileDescriptor, fileSize);
+    position = *(unsigned *)(f->esp + 8);
+    seek(fileDescriptor, position);
     break;
   case SYS_TELL:
     // 1 argument
@@ -227,7 +228,6 @@ int read(int fd, void *buffer, unsigned size)
 int write(int fd, const void *buffer, unsigned size)
 {
   // validate arguments
-  if(!valid_fd(fd) || fd == 0)return -1;
   if(size < 1 )return 0;
 
   if (fd == 1)
