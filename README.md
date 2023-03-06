@@ -9,3 +9,4 @@ Every individual lab have a separate branch
 - Lab 3 - Complete
 - Lab 4 - Complete
 - Lab 5 - Complete
+- Lab 6 - Complete
