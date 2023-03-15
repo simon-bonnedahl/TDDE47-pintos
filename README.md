@@ -13,7 +13,7 @@ _Every individual lab have a separate branch_
 # Exam cheatsheet
 
 - _Book:_ https://www.download.booksfree.org/download-book/?dlm-dp-dl=24807
-- _Flashcards:_ https://quizlet.com/705419294/tddb68-flash-cards/
+- _Flashcards:_ https://quizlet.com/705419294/tddb68-flash-cards/ (Not provided by me)
 
 ## Processes and threads
 
@@ -140,9 +140,23 @@ An atomic operation is an operation that appears to be executed as a single, ind
 
 Paging is a memory management scheme used by operating systems to manage physical memory by dividing it into fixed-size blocks called "pages" and virtual memory into fixed-size blocks called "page frames". When a process requires memory, it is allocated a set of contiguous virtual pages, which are mapped to physical pages by the operating system. Pages that are not currently in use are swapped out to disk to make space for new pages. Paging allows the operating system to allocate memory efficiently and provide virtual memory to each process, allowing it to use more memory than is physically available. It also helps to prevent memory **fragmentation** and improves memory utilization by enabling sharing of pages between multiple processes.
 
-![Process state](https://raw.githubusercontent.com/simon-bonnedahl/TDDE47-pintos/main/images/paging.png)
+![Paging](https://raw.githubusercontent.com/simon-bonnedahl/TDDE47-pintos/main/images/paging.png)
+
+### Page faults
+
+A page fault occurs when a program tries to access a memory page that is not currently in physical memory. The operating system resolves the fault by fetching the required page from secondary storage and loading it into physical memory. Once the page is loaded, the operating system updates the page table and allows the program to continue execution. Page faults are a normal part of memory management and occur frequently in most programs.
+
+![Page faults](https://raw.githubusercontent.com/simon-bonnedahl/TDDE47-pintos/main/images/page-fault.png)
 
 ### MMU
+
+The Memory Management Unit (MMU) is a hardware component in a computer system that is responsible for translating virtual memory addresses used by the software running on the system into physical memory addresses used by the computer's RAM.
+
+The MMU's purpose is to provide an abstraction layer between the software and the physical memory of the system, allowing the software to access a larger address space than the physical memory actually provides. The MMU achieves this by creating a mapping between virtual memory addresses and physical memory addresses, and intercepting all memory access requests from the software to perform the necessary translation.
+
+The MMU also provides memory protection and memory allocation management features. It can enforce memory protection policies by marking pages of memory as read-only, read-write, or no access, and can trigger a memory access violation exception when the software attempts to access memory in violation of these policies. Additionally, the MMU can manage the allocation and deallocation of physical memory pages, by creating and removing mappings between virtual and physical addresses as needed, and handling page faults when the software requests a page that is not currently mapped in physical memory.
+
+Overall, the MMU plays a critical role in managing the memory of a computer system, enabling efficient use of physical memory, providing memory protection, and enabling the use of virtual memory.
 
 ### Page replacement algorithms
 
@@ -156,11 +170,49 @@ Paging is a memory management scheme used by operating systems to manage physica
 
 ### Belady's Anomaly
 
+Belady's anomaly is a situation where adding more memory frames to a system can actually increase the number of page faults, despite the common intuition that more memory should always result in fewer page faults. This occurs because some page replacement algorithms can behave in unexpected ways when more memory is available, resulting in a counterintuitive increase in the number of page faults. However, this phenomenon is not always observed in practice and is a theoretical result that occurs only in certain circumstances.
+
 ### Trashing
+
+Trashing is a term used to describe a situation in which a computer system spends a significant amount of time and resources moving data between physical memory (RAM) and secondary storage, such as a hard disk. This occurs when the system is overcommitted and does not have enough physical memory to hold all of the data it needs to process.
+
+When a computer system starts trashing, its performance can degrade significantly, as it spends a large portion of its time swapping data between RAM and secondary storage instead of actually processing the data. This can result in slower response times, increased latency, and a decrease in overall system throughput.
+
+Trashing is often caused by running too many memory-intensive programs simultaneously, or by running programs that require more memory than is available on the system. To avoid trashing, it is important to monitor system memory usage and adjust the number and types of programs running on the system as needed to ensure that there is always enough physical memory available for the system to operate efficiently.
+
+### Memory Protection
+
+Memory protection is a mechanism that prevents processes from accessing memory regions they are not authorized to access, using hardware features such as the Memory Management Unit (MMU). It helps ensure system stability and security by preventing processes from interfering with each other and accessing sensitive data.
 
 ### Memory Compression
 
+Memory compression is a technique used by operating systems to increase the effective amount of physical memory available to a system by compressing data in memory. When memory is running low, the operating system can compress some of the least frequently used pages of memory and store them in a compressed format in physical memory. This frees up physical memory for other applications and can improve system performance by reducing the amount of data that needs to be swapped out to disk. When a compressed page is needed, the operating system can decompress it on the fly and load it back into physical memory.
+
+### Segmentation
+
+Segmentation is a memory management technique used by operating systems to divide a process's logical address space into multiple segments, each of which contains a specific type of data, such as code or data. Each segment is assigned a base address and a length, which are used to map logical addresses to physical addresses. This allows processes to be divided into logical units, which can be independently managed and protected from other processes. Segmentation can help prevent buffer overflow attacks and simplify memory allocation, but it can also lead to **fragmentation** and **overhead** in the memory management system. Segmentation is often used in combination with paging to provide a more flexible and efficient memory management solution.
+
+### Translation Lookaside Buffer (TLB)
+
+The Translation Lookaside Buffer (TLB) is a hardware cache used by the CPU to speed up virtual address translation. When a program accesses memory, it uses virtual addresses, which must be translated by the CPU into physical addresses before they can be used to access memory. The TLB is a cache that stores recently used virtual-to-physical address translations, so the CPU can quickly access the physical address without having to consult the page table. This speeds up memory access and improves system performance. When a virtual address is not found in the TLB, the CPU must consult the page table to retrieve the physical address, which takes longer than a TLB hit.
+
 ## Virtualization
+
+### Layering
+
+### Microkernels
+
+### Kernel modules
+
+### Implementations
+
+- **Emulation**
+- **Hypervisor-based virtualization**
+- **Paravirtualization**
+- **Programming environment virtualization**
+- **Application containment**
+
+### Hypervisor-based virtualization
 
 ## File System
 
@@ -182,10 +234,13 @@ Paging is a memory management scheme used by operating systems to manage physica
 
 ### Linked list
 
-###
+### Journaling
+
+### Snapshot
 
 # Terms
 
 - **Fragmentation** is
+- **Overhead** is
 - **Mutual Exclusion** is
 -
