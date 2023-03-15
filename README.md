@@ -122,7 +122,7 @@ Deadlocks in operating systems occur when two or more threads or processes are b
 ### Spinlocks
 
 A spinlock is a synchronization technique used in multi-threaded programming to protect shared resources from concurrent access by multiple threads. A spinlock is essentially a busy-wait loop, in which a thread repeatedly checks a lock variable to see if it has been acquired by another thread. If the lock is currently held by another thread, the waiting thread continues to spin (loop) until the lock becomes available. Once the lock is acquired, the thread can access the shared resource or enter a critical section of code.
-Spinlocks are a form of mutual exclusion mechanism that can be implemented in software or hardware. They are commonly used in real-time systems, where the overhead of context switching between threads or processes can be high, and in situations where waiting for a lock for a short period of time is expected to be more efficient than switching to another thread. However, excessive spinning can lead to high CPU utilization and can cause performance problems.
+Spinlocks are a form of **mutual exclusion** mechanism that can be implemented in software or hardware. They are commonly used in real-time systems, where the overhead of context switching between threads or processes can be high, and in situations where waiting for a lock for a short period of time is expected to be more efficient than switching to another thread. However, excessive spinning can lead to high CPU utilization and can cause performance problems.
 
 ### Atomic Operation
 
@@ -138,12 +138,54 @@ An atomic operation is an operation that appears to be executed as a single, ind
 
 ### Paging
 
-Paging is a memory management scheme used by operating systems to manage physical memory by dividing it into fixed-size blocks called "pages" and virtual memory into fixed-size blocks called "page frames". When a process requires memory, it is allocated a set of contiguous virtual pages, which are mapped to physical pages by the operating system. Pages that are not currently in use are swapped out to disk to make space for new pages. Paging allows the operating system to allocate memory efficiently and provide virtual memory to each process, allowing it to use more memory than is physically available. It also helps to prevent memory fragmentation and improves memory utilization by enabling sharing of pages between multiple processes.
+Paging is a memory management scheme used by operating systems to manage physical memory by dividing it into fixed-size blocks called "pages" and virtual memory into fixed-size blocks called "page frames". When a process requires memory, it is allocated a set of contiguous virtual pages, which are mapped to physical pages by the operating system. Pages that are not currently in use are swapped out to disk to make space for new pages. Paging allows the operating system to allocate memory efficiently and provide virtual memory to each process, allowing it to use more memory than is physically available. It also helps to prevent memory **fragmentation** and improves memory utilization by enabling sharing of pages between multiple processes.
 
 ![Process state](https://raw.githubusercontent.com/simon-bonnedahl/TDDE47-pintos/main/images/paging.png)
 
+### MMU
+
+### Page replacement algorithms
+
+- **First-In-First-Out(FIFO)**
+  -- Replaces the oldest page. Exhibits **Belady's anomaly**
+- **Least Recently Used**
+  -- Replaces the page that **has not been** used for the longest period of time. **Avoids Belady's anomaly**
+- **Optimal replacement (Belady's algoritm)**
+  -- Replaces the page that **will not be used** for the longest period of time. Is only optimal if there are no
+  "dirty write-backs". **Avoids Belady's anomaly**
+
+### Belady's Anomaly
+
+### Trashing
+
+### Memory Compression
+
 ## Virtualization
+
+## File System
+
+### Inode
+
+### Hadoop Distributed File System (HDFS)
+
+### Virtual File System (VFS)
+
+### File Control Block (FCB)
+
+### Allocation Methods
+
+- **Contiguous allocation**
+- **Indexed allocation**
+- **Linked allocation**
+
+### File-Allocation Table (FAT)
+
+### Linked list
+
+###
 
 # Terms
 
+- **Fragmentation** is
+- **Mutual Exclusion** is
 -
