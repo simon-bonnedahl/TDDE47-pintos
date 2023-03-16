@@ -146,8 +146,6 @@ Paging is a memory management scheme used by operating systems to manage physica
 
 A page fault occurs when a program tries to access a memory page that is not currently in physical memory. The operating system resolves the fault by fetching the required page from secondary storage and loading it into physical memory. Once the page is loaded, the operating system updates the page table and allows the program to continue execution. Page faults are a normal part of memory management and occur frequently in most programs.
 
-![Page faults](https://raw.githubusercontent.com/simon-bonnedahl/TDDE47-pintos/main/images/page-fault.png)
-
 ### MMU
 
 The Memory Management Unit (MMU) is a hardware component in a computer system that is responsible for translating virtual memory addresses used by the software running on the system into physical memory addresses used by the computer's RAM.
@@ -158,6 +156,11 @@ The MMU also provides memory protection and memory allocation management feature
 
 Overall, the MMU plays a critical role in managing the memory of a computer system, enabling efficient use of physical memory, providing memory protection, and enabling the use of virtual memory.
 
+### Page replacement
+
+Page replacement is a technique used by operating systems to manage memory when the physical memory becomes full. When a process requests a page that is not present in physical memory, the operating system must choose a page to evict from physical memory to make room for the requested page. This is called page replacement.
+The operating system uses a page replacement algorithm to select the page to be evicted. The goal of the algorithm is to choose the page that is least likely to be used in the near future to minimize the impact on performance. When a page is selected for replacement, the operating system writes the page's contents back to disk if it has been modified, and then frees the page's frame in physical memory to be used for other pages. The requested page is then loaded into the freed frame in physical memory.
+
 ### Page replacement algorithms
 
 - **First-In-First-Out(FIFO)**
@@ -165,8 +168,8 @@ Overall, the MMU plays a critical role in managing the memory of a computer syst
 - **Least Recently Used**
   -- Replaces the page that **has not been** used for the longest period of time. **Avoids Belady's anomaly**
 - **Optimal replacement (Belady's algoritm)**
-  -- Replaces the page that **will not be used** for the longest period of time. Is only optimal if there are no
-  "dirty write-backs". **Avoids Belady's anomaly**
+  -- Tries to replace the page that **will not be used** for the longest period of time. Is only optimal if there are no
+  "dirty write-backs". Avoids **Belady's anomaly**
 
 ### Belady's Anomaly
 
@@ -200,11 +203,50 @@ The Translation Lookaside Buffer (TLB) is a hardware cache used by the CPU to sp
 
 ### Layering
 
+The layering approach to virtualization is a technique that involves dividing the virtualization process into layers, each of which is responsible for a specific aspect of the virtualization process. Each layer provides a level of abstraction that enables the layer above it to access resources in a simplified and standardized way, independent of the underlying hardware.
+
+The layers in a virtualization stack typically include the hardware layer, hypervisor layer, guest operating system layer, and application layer. The hardware layer provides access to the underlying physical hardware, while the hypervisor layer provides the virtualization layer and manages the virtual machines running on the physical hardware. The guest operating system layer provides a virtualized operating system environment, and the application layer runs on top of the virtualized operating system.
+
+The layering approach allows each layer to focus on its specific function, making it easier to develop, test, and maintain each layer separately. It also provides a high degree of flexibility, as each layer can be replaced or updated independently of the other layers. This approach is commonly used in hypervisor-based virtualization, where the hypervisor layer provides the virtualization layer and isolates the guest operating systems from the underlying physical hardware.
+
 ### Microkernels
+
+Microkernels are a type of operating system kernel architecture that is designed to be small and minimalist, providing only the essential services required to manage hardware resources and inter-process communication. The microkernel approach contrasts with **monolithic kernel architectures**, which implement a wide range of services and device drivers in the kernel.
+
+In a microkernel architecture, the kernel provides only basic services such as **inter-process communication**, process management, and memory management. Other services, such as device drivers and file system management, are implemented as separate processes running outside the kernel. This design reduces the complexity and size of the kernel, making it more secure and easier to maintain.
+
+**Pros:**
+
+- Easier to extend a microkernel
+  – Easier to port the operating system to new architectures
+  – More reliable (less code is running in kernel mode)
+  – More secure
+
+**Cons:**
+
+- Performance overhead of user space to kernel space
+  communication
+  – More complicated synchronization
 
 ### Kernel modules
 
-### Implementations
+Kernel modules, also known as loadable kernel modules (LKMs), are software components that can be dynamically loaded and unloaded into the kernel of an operating system to provide additional functionality, such as device drivers or file system support. Kernel modules are particularly useful in Linux and other Unix-like operating systems, where the kernel is designed to be small and modular.
+
+**Pros:**
+
+- Reduced kernel size
+  – Simplified kernel development
+  – Increased flexibility
+  – Improved system performance
+
+**Cons:**
+
+- Security risks
+  – Complexity
+  - Incompatibility
+  - Performance overhead
+
+### Implementations of virtualization
 
 - **Emulation**
 - **Hypervisor-based virtualization**
@@ -214,11 +256,17 @@ The Translation Lookaside Buffer (TLB) is a hardware cache used by the CPU to sp
 
 ### Hypervisor-based virtualization
 
+Hypervisor-based virtualization is a virtualization technique that allows multiple operating systems to run on a single physical machine, each in its own isolated virtual environment. This is achieved by using a layer of software called a hypervisor or a virtual machine monitor (VMM) that sits between the hardware and the operating systems being virtualized. The hypervisor provides virtualized hardware resources to each operating system, including CPU, memory, and I/O devices. Each operating system runs as if it has full access to the physical hardware, but in reality, it is running in its own isolated environment created by the hypervisor. This provides a flexible and efficient way to consolidate multiple workloads onto a single physical machine, improving resource utilization and reducing hardware costs.
+
 ## File System
 
 ### Inode
 
-### Hadoop Distributed File System (HDFS)
+An inode (short for "index node") is a data structure used by file systems in operating systems to store information about a file or directory. Each file or directory on a file system is represented by an inode.
+
+Inodes typically contain information such as the file's owner, permissions, size, timestamps, and pointers to the actual data blocks on disk where the file's contents are stored. When a user requests to read or write a file, the operating system uses the inode to locate the file's data blocks on disk.
+
+Inodes are an important part of file system design because they enable efficient storage and retrieval of file metadata, as well as quick access to the data blocks that make up a file.
 
 ### Virtual File System (VFS)
 
@@ -227,8 +275,11 @@ The Translation Lookaside Buffer (TLB) is a hardware cache used by the CPU to sp
 ### Allocation Methods
 
 - **Contiguous allocation**
-- **Indexed allocation**
+  -- This method involves storing files as contiguous blocks of data on the disk. When a file is created, the file system identifies a contiguous block of free space on the disk that is large enough to hold the entire file, and assigns it to the file. This method is simple and fast, but can lead to fragmentation over time as files are deleted and new files are added.
+- **Indexed allocation**'
+  -- This method involves storing files in a table, or index, of data blocks. Each file has its own index, which contains pointers to the locations of the data blocks on the disk. This method allows for fast access to individual data blocks, but requires additional disk space to store the index, which can be a disadvantage when dealing with large numbers of small files.
 - **Linked allocation**
+  -- This method involves storing files as a linked list of data blocks on the disk. Each block in the file contains a pointer to the next block in the file, and the final block contains a pointer to a special end-of-file marker. This method allows files to be stored in non-contiguous blocks, reducing fragmentation, but can lead to poor performance when reading or writing large files, as the file system needs to follow a chain of pointers to access each block.
 
 ### File-Allocation Table (FAT)
 
@@ -238,9 +289,13 @@ The Translation Lookaside Buffer (TLB) is a hardware cache used by the CPU to sp
 
 ### Snapshot
 
+### Readers-writers problem
+
 # Terms
 
 - **Fragmentation** is
 - **Overhead** is
 - **Mutual Exclusion** is
--
+- **Monolithic kernel architectures** is
+- **Inter-process communication** is
+- **Starvation** is
