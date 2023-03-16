@@ -43,7 +43,7 @@ The Process Control Block (PCB) is a data structure used by operating systems to
 
 ### Multithreading
 
-Multithreading in Pintos involves the creation of multiple threads within a process that can execute concurrently. Each thread has its own stack, register set, and thread control block (TCB) containing information such as its ID, state, and priority. Pintos uses a priority-based scheduling algorithm to determine which thread should execute next, and threads can synchronize their execution using synchronization primitives such as mutex locks and semaphores. Multithreading allows for improved performance and efficiency by enabling parallel execution of tasks within a process. However, it also requires careful management of shared resources and synchronization to prevent race conditions and ensure correct program behavior.
+Multithreading involves the creation of multiple threads within a process that can execute concurrently. Each thread has its own stack, register set, and thread control block (TCB) containing information such as its ID, state, and priority. Pintos uses a priority-based scheduling algorithm to determine which thread should execute next, and threads can synchronize their execution using synchronization primitives such as mutex locks and semaphores. Multithreading allows for improved performance and efficiency by enabling parallel execution of tasks within a process. However, it also requires careful management of shared resources and synchronization to prevent race conditions and ensure correct program behavior.
 
 ## CPU Scheduling
 
