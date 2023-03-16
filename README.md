@@ -217,16 +217,15 @@ In a microkernel architecture, the kernel provides only basic services such as *
 
 **Pros:**
 
-- Easier to extend a microkernel
-  – Easier to port the operating system to new architectures
-  – More reliable (less code is running in kernel mode)
-  – More secure
+- **Easier to extend a microkernel**
+  – **Easier to port the operating system to new architectures**
+  – **More reliable (less code is running in kernel mode)**
+  – **More secure**
 
 **Cons:**
 
-- Performance overhead of user space to kernel space
-  communication
-  – More complicated synchronization
+- **Performance overhead of user space to kernel space communication**
+- **More complicated synchronization**
 
 ### Kernel modules
 
@@ -234,17 +233,17 @@ Kernel modules, also known as loadable kernel modules (LKMs), are software compo
 
 **Pros:**
 
-- Reduced kernel size
-  – Simplified kernel development
-  – Increased flexibility
-  – Improved system performance
+- **Reduced kernel size**
+  – **Simplified kernel development**
+  – **Increased flexibility**
+  – **Improved system performance**
 
 **Cons:**
 
-- Security risks
-  – Complexity
-  - Incompatibility
-  - Performance overhead
+- **Security risks**
+  – **Complexity**
+  - **Incompatibility**
+  - **Performance overhead**
 
 ### Implementations of virtualization
 
@@ -270,7 +269,11 @@ Inodes are an important part of file system design because they enable efficient
 
 ### Virtual File System (VFS)
 
+The Virtual File System (VFS) is an abstraction layer in an operating system that provides a consistent interface for accessing different types of file systems. It achieves this by providing a set of generic file system operations, such as opening, reading, and writing files, that can be implemented differently by different file systems. The VFS allows applications and system components to access files on different types of file systems without having to know the details of each file system, and enables the operating system to support multiple file systems simultaneously. This makes it easier to manage and use multiple storage systems in a consistent way.
+
 ### File Control Block (FCB)
+
+A File Control Block (FCB) is a data structure used by an operating system to manage information about a file. It contains information such as the file name, location, size, creation and modification dates, and permissions. The FCB is created when a file is opened and is used to keep track of the file's status and location in memory. It also contains pointers to the file's data blocks on disk, making it possible to read and write data to the file. The FCB is typically used by the operating system's file system driver to manage file operations and ensure data integrity.
 
 ### Allocation Methods
 
@@ -283,19 +286,39 @@ Inodes are an important part of file system design because they enable efficient
 
 ### File-Allocation Table (FAT)
 
-### Linked list
+The File Allocation Table (FAT) is a file system used by many operating systems, including Windows and DOS. It is a simple and efficient file system that uses a table to keep track of the location of files on a disk. The FAT contains entries for each file on the disk, including the file name, date and time stamps, and a pointer to the first cluster of the file. Each cluster is a fixed-size block of data, and files can span multiple clusters. The FAT allows for quick access to files and efficient use of disk space, but can become fragmented over time, reducing performance.
 
 ### Journaling
 
+Journaling file systems are a type of file system that provides a way to recover quickly from system crashes or other interruptions that can cause file system corruption or data loss. They do this by keeping a journal or log of all changes made to the file system. The journal records changes before they are made to the file system, allowing the system to recover quickly by replaying the journal to restore the file system to a consistent state.
+
+When a change is made to the file system, such as creating, deleting or modifying a file, the change is recorded in the journal along with a checksum or hash value. When the system restarts, the file system driver can read the journal to determine if any changes were not completed or were interrupted, and then replay the changes to ensure the file system is consistent.
+
+Journaling file systems are used in many modern operating systems, including Linux, macOS, and Windows. They provide better data integrity and faster recovery times compared to traditional file systems, making them a popular choice for systems that require high reliability and availability.
+
 ### Snapshot
+
+A snapshot-based file system is a type of file system that provides a way to create and manage snapshots of the file system at different points in time. A snapshot is a read-only copy of the file system at a specific point in time, allowing users to roll back the file system to that point in time if necessary.
+
+Snapshots are created by taking a copy of the file system's metadata, which includes information about the file system's directories and files, and storing it in a separate location. The file system continues to operate normally, with changes being made to the file system's data blocks, but the metadata of the snapshot remains unchanged.
+
+Snapshots can be used for a variety of purposes, such as system backup, data recovery, or testing. For example, if a user accidentally deletes a file, they can use a snapshot to restore the file to a previous state. Snapshots can also be used for testing changes to the file system or software updates, allowing users to roll back to a previous state if the changes cause issues.
 
 ### Readers-writers problem
 
+The Readers-Writers problem is a classic synchronization problem in computer science that deals with multiple threads accessing a shared resource. In this problem, multiple threads need to access a shared resource, but they have different requirements. Readers only need to read the resource, while writers need to modify it.
+
+The problem arises when multiple threads try to access the shared resource simultaneously. If a reader and a writer try to access the resource at the same time, the writer may modify the resource while the reader is still reading it, leading to inconsistent or incorrect data. Similarly, if two writers try to modify the resource at the same time, their changes may conflict with each other, resulting in data loss or corruption.
+
+To solve this problem, synchronization mechanisms such as semaphores, mutexes, or monitors can be used to control access to the shared resource. One common approach is to use a read-write lock, which allows multiple readers to access the resource simultaneously, but only one writer at a time. When a writer needs to modify the resource, it acquires a write lock, which prevents any other thread from accessing the resource until the write operation is completed. When a reader needs to read the resource, it acquires a read lock, which allows multiple readers to access the resource simultaneously, but prevents any writer from modifying it until all the readers have finished reading.
+
+Proper synchronization is crucial to ensure data consistency and integrity in multi-threaded applications. The Readers-Writers problem is a common example of such synchronization challenges, and understanding how to solve it can help developers design more efficient and reliable multi-threaded applications.
+
 # Terms
 
-- **Fragmentation** is
-- **Overhead** is
-- **Mutual Exclusion** is
-- **Monolithic kernel architectures** is
-- **Inter-process communication** is
-- **Starvation** is
+- **Fragmentation** is when a file or data is divided into smaller pieces or fragments and scattered across different locations in storage. This can lead to reduced storage efficiency and slower access times, as the computer must search for and retrieve the fragments when they are needed.
+- **Overhead** is the additional resources or operations required by a system or process beyond the minimum necessary to achieve a desired outcome. This can include time, memory, or processing power, and can lead to reduced efficiency or performance.
+- **Mutual Exclusion** is a mechanism to ensure that only one process or thread can access a shared resource at a time, to prevent race conditions or other synchronization issues. This is typically achieved through the use of locks or other synchronization primitives that prevent multiple processes or threads from accessing the resource simultaneously.
+- **Monolithic kernel architectures** is a type of operating system design in which all the operating system's services, such as device drivers, file systems, and memory management, are contained within a single kernel. This approach can provide better performance and simpler design, but can also be less modular and harder to maintain.
+- **Inter-process communication** is a mechanism used by operating systems to allow different processes or applications to communicate and share data with each other. This can be achieved through various methods, such as message passing, shared memory, or sockets.
+- **Starvation** is a situation that can occur in concurrent systems when a process or thread is unable to access a resource it needs to execute, due to the resource being monopolized by other processes or threads. This can result in the affected process or thread being blocked indefinitely, which can lead to reduced system performance or even a system deadlock.
