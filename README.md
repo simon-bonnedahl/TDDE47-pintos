@@ -166,7 +166,7 @@ The operating system uses a page replacement algorithm to select the page to be 
 - **First-In-First-Out(FIFO)**
   -- Replaces the oldest page. Exhibits **Belady's anomaly**
 - **Least Recently Used**
-  -- Replaces the page that **has not been** used for the longest period of time. **Avoids Belady's anomaly**
+  -- Replaces the page that **has not been** used for the longest period of time. Avoids **Belady's anomaly**
 - **Optimal replacement (Belady's algoritm)**
   -- Tries to replace the page that **will not be used** for the longest period of time. Is only optimal if there are no
   "dirty write-backs". Avoids **Belady's anomaly**
@@ -190,6 +190,24 @@ Memory protection is a mechanism that prevents processes from accessing memory r
 ### Memory Compression
 
 Memory compression is a technique used by operating systems to increase the effective amount of physical memory available to a system by compressing data in memory. When memory is running low, the operating system can compress some of the least frequently used pages of memory and store them in a compressed format in physical memory. This frees up physical memory for other applications and can improve system performance by reducing the amount of data that needs to be swapped out to disk. When a compressed page is needed, the operating system can decompress it on the fly and load it back into physical memory.
+
+### Memory mapping
+
+Memory mapping is a technique used by operating systems to allow a process to access a file as if it were in memory, rather than on disk. In this technique, the operating system creates a mapping between a region of virtual memory in the process and a region of the file on disk. This allows the process to read and write to the file as if it were accessing memory directly.
+
+Memory-mapped files offer several benefits, including:
+
+**Improved Performance:**
+Memory-mapped files can provide faster access to data than traditional file access methods because data is accessed directly from memory instead of being loaded into and out of memory in blocks. This is particularly useful when working with large files, as only the required portion of the file is loaded into memory.
+
+**Simplified Programming:**
+Memory-mapped files simplify programming because they allow files to be treated as if they were part of the process's memory. This means that the same memory access techniques used for data in memory can be used for data in files.
+
+**Sharing Data:**
+Memory-mapped files can be used to share data between processes because multiple processes can map the same region of the file into their address space. This can be useful for inter-process communication and can help to reduce the memory usage of a system.
+
+**Persistence:**
+Memory-mapped files can be used to persist data across process boundaries because changes made to the mapped memory are automatically written back to the file on disk. This can simplify the task of storing and retrieving data between runs of a program.
 
 ### Segmentation
 
@@ -313,6 +331,10 @@ The problem arises when multiple threads try to access the shared resource simul
 To solve this problem, synchronization mechanisms such as semaphores, mutexes, or monitors can be used to control access to the shared resource. One common approach is to use a read-write lock, which allows multiple readers to access the resource simultaneously, but only one writer at a time. When a writer needs to modify the resource, it acquires a write lock, which prevents any other thread from accessing the resource until the write operation is completed. When a reader needs to read the resource, it acquires a read lock, which allows multiple readers to access the resource simultaneously, but prevents any writer from modifying it until all the readers have finished reading.
 
 Proper synchronization is crucial to ensure data consistency and integrity in multi-threaded applications. The Readers-Writers problem is a common example of such synchronization challenges, and understanding how to solve it can help developers design more efficient and reliable multi-threaded applications.
+
+### Copy-on-write (COW)
+
+Copy-on-write (COW) is a technique used in computer programming to optimize memory usage by avoiding unnecessary duplication of data. In COW, when a process requests to create a new copy of data, the operating system does not immediately make a full copy of the data. Instead, the operating system creates a copy-on-write reference to the original data, which means that the new copy points to the same physical memory as the original data until the copy is modified. When the new copy is modified, only the modified data is copied to a new location in memory, and the reference to the original data is replaced by a reference to the new copy. This avoids unnecessary copying of data and saves memory space. COW is commonly used in virtual memory systems and file systems to implement efficient sharing of memory and data between processes.
 
 # Terms
 
