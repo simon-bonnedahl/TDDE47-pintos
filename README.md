@@ -322,6 +322,10 @@ Snapshots are created by taking a copy of the file system's metadata, which incl
 
 Snapshots can be used for a variety of purposes, such as system backup, data recovery, or testing. For example, if a user accidentally deletes a file, they can use a snapshot to restore the file to a previous state. Snapshots can also be used for testing changes to the file system or software updates, allowing users to roll back to a previous state if the changes cause issues.
 
+### Snapshot vs Journaling
+
+Snapshot filesystems allow you to save and access read-only copies of a filesystem at different points in time, while journaling filesystems log changes made to the filesystem to ensure data consistency and reliability.
+
 ### Readers-writers problem
 
 The Readers-Writers problem is a classic synchronization problem in computer science that deals with multiple threads accessing a shared resource. In this problem, multiple threads need to access a shared resource, but they have different requirements. Readers only need to read the resource, while writers need to modify it.
