@@ -21,36 +21,37 @@
 - C) User management for the guest OSs
 - D) Memory management ✅
 
-Which are NOT the responsibilities of the OS?
+### Which are NOT the responsibilities of the OS?
 
 A) Decide which process to run
 B) Managing the memory for all processes
-C) Preventing deadlocks
+C) Preventing deadlocks ✅
 D) Managing the CPU
 
-Which of the following mechanisms are intended to speed-up the memory access time?
+### Which of the following mechanisms are intended to speed-up the memory access time?
 
 A) Relocation
-B) Translation Look-aside Buffer (TLB)
-C) CPU Cache
+B) Translation Look-aside Buffer (TLB) ✅
+C) CPU Cache ✅
 D) Segmentation
 
-Which of the following are the weaknesses of the Banker’s algorithm?
+### Which of the following are the weaknesses of the Banker’s algorithm?
 
-A) Assumes a fixed number of resources
-B) Assumes that processes state maximum needs in advance
+A) Assumes a fixed number of resources ✅
+B) Assumes that processes state maximum needs in advance ✅
 C) Assumes a variable population of processes
-D) Assumes that a process will terminate
+D) Assumes that a process will terminate ✅
 
-Which of the following statements are true?
+### Which of the following statements are true?
 
-A) Process termination can help with recovery from deadlock
+A) Process termination can help with recovery from deadlock ✅
 B) A deadlock detection algorithm is called for each resource request
-C) A wait-for graph is a variant of the resource-allocation graph
+C) A wait-for graph is a variant of the resource-allocation graph ✅
 D) Resource preemption avoids deadlocks
 
-Consider the program below. How many times will it output the letter “A”?
+### Consider the program below. How many times will it output the letter “A”?
 
+```
 #include <stdio.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -67,9 +68,10 @@ printf("A");
 }
 printf("A");
 }
+```
 
 A) 3
-B) 5
+B) 5 ✅
 C) 6
 D) 8
 
