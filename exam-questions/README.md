@@ -7,22 +7,19 @@
 - C) Progress ✅
 - D) Availability
 
-Which of the following statements are true about the PCB?
+### Which of the following statements are true about the PCB?
 
-A) It contains the process stack and heap
-B) It contains the program counter information
-C) It includes information about the process threads
-D) PCB is short for ’Processor Control Block’
+- A) It contains the process stack and heap
+- B) It contains the program counter information ✅
+- C) It includes information about the process threads
+- D) PCB is short for ’Processor Control Block’ ✅
 
-A hypervisor is used in virtualization solutions to allow multiple operating systems to
-run on the same physical hardware. The hypervisor can let the OSs take care of some
-things on their own, but must have at least some support for certain concepts. Which
-of the following must be supported by the hypervisor?
+### A hypervisor is used in virtualization solutions to allow multiple operating systems to run on the same physical hardware. The hypervisor can let the OSs take care of some things on their own, but must have at least some support for certain concepts. Which of the following must be supported by the hypervisor?
 
-A) File table for files opened by guest OSs
-B) Special instructions (i.e., that require the CPU to be in protected mode)
-C) User management for the guest OSs
-D) Memory management
+- A) File table for files opened by guest OSs
+- B) Special instructions (i.e., that require the CPU to be in protected mode) ✅
+- C) User management for the guest OSs
+- D) Memory management ✅
 
 Which are NOT the responsibilities of the OS?
 
