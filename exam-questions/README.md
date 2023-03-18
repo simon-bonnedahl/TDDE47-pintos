@@ -163,27 +163,27 @@ D) They can only be implemented on a system with special hardware
 
 A deadlock detection algorithm is called for each resource request
 Deadlocks are only affecting threads
-A resource-allocation graph can be used to detect deadlocks
-No deadlock is possible if any of the Coffman conditions are false
+A resource-allocation graph can be used to detect deadlocks ✅
+No deadlock is possible if any of the Coffman conditions are false ✅
 
 ### Which of the following operations require a system call to be performed when called from a user program?
 
 Reading from memory allocated on the heap
-Allocating new memory on the heap
-Reading from a file on disk
+Allocating new memory on the heap ✅
+Reading from a file on disk ✅
 Making a regular function call
 
 ### Which of the following items are found in a POSIX inode for a regular file?
 
-A) File size
+A) File size ✅
 B) Pointer to the directory that the file is located in
-C) Pointers to blocks on disk where the file is stored
+C) Pointers to blocks on disk where the file is stored ✅
 D) The file position indicator (as set by an fseek command)
 
 ### Which of the following statements are true?
 
-A) A process in a modern operating system has its own protected memory
-B) Different threads belonging to the same process share memory with each other.
+A) A process in a modern operating system has its own protected memory. ✅
+B) Different threads belonging to the same process share memory with each other. ✅
 C) A thread is only run when there is no process that wants to use the CPU.
 D) Threads are guaranteed to be deadlock-free
 
@@ -192,29 +192,29 @@ D) Threads are guaranteed to be deadlock-free
 ### Which of these algorithms may exhibit the Belady’s anomaly?
 
 A) LRU replacement
-B) Second-chance replacement (based on FIFO)
-C) FIFO replacement
+B) Second-chance replacement (based on FIFO) ✅
+C) FIFO replacement ✅
 D) Optimal replacement
 
 ### Which of the following mechanisms will prevent deadlocks?
 
 A) Only use safe resources
-B) Always acquire resources according to a globally defined order
-C) Ensure that ∀j : Rj ≥ P i D(i, j), where Rj is the number of instances of resource j and D(i, j) is the maximum demand of resource type j from process i.
+B) Always acquire resources according to a globally defined order ✅
+C) Ensure that ∀j : Rj ≥ P i D(i, j), where Rj is the number of instances of resource j and D(i, j) is the maximum demand of resource type j from process i. ✅
 D) Only request a resource when it is really needed.
 
 ### Given a virtual memory system with 4 page frames, how many page faults occur with the Least-Recently Used replacement strategy when pages are accessed in the following order: 1, 2, 3, 4, 5, 1, 3, 4, 2, 3, 1, 5, 4.
 
 A) 7
-B) 9
+B) 9 ✅
 C) 11
 D) 13
 
 ### Which of the following memory management tasks can be performed by the MMU:
 
-A) Memory protection
-B) Page table lookup
-C) TLB lookup
+A) Memory protection ✅
+B) Page table lookup ✅
+C) TLB lookup ✅
 D) Page replacement
 
 ### Consider the pseudocode below. Which of the following alternatives are possible in an environment with other processes P2 and P3 potentially accessing the semaphores S1 and S2.
@@ -235,40 +235,40 @@ signal(S2)
 ```
 
 A) A deadlock may occur if another process invokes wait on S1 and S2 in the wrong
-order.
+order. ✅
 B) A deadlock may occur if another process invokes signal on S1 and S2 in the
 wrong order.
 C) A race condition may occur if another process omits to call wait on one of the
-semaphores.
+semaphores. ✅
 D) A race condition may occur if another process spuriously calls signal on one of
-the semaphores
+the semaphores. ✅
 
 ### Which of the following strategies can help with Thrashing?
 
-A) Using a local replacement algorithm
+A) Using a local replacement algorithm ✅
 B) Increase the degree of multiprogramming
-C) Using a priority replacement algorithm
-D) Decreasing the degree of multiprogramming
+C) Using a priority replacement algorithm ✅
+D) Decreasing the degree of multiprogramming ✅
 
 ### Which of the following operations will result in a system call for a normal operating system?
 
 A) Reading the value of a variable stored on the stack
-B) Creating a new file
-C) Allocating memory on the heap
+B) Creating a new file ✅
+C) Allocating memory on the heap ✅
 D) Performing a jump (JMP) instruction
 
 ### Which of the terms below refer to methods used for allocation of disk space for a file?
 
 A) Virtual allocation
-B) Indexed allocation
+B) Indexed allocation ✅
 C) Segment allocation
-D) Contiguous allocation
+D) Contiguous allocation ✅
 
 ### Which of the following statements are true about microkernels?
 
 A) A microkernel runs entirely in user space.
-B) Microkernels allow more operating system services to run in user space.
-C) Microkernels need to provide process management.
+B) Microkernels allow more operating system services to run in user space. ✅
+C) Microkernels need to provide process management. ✅
 D) Microkernels need to provide file system services.
 
 ### Consider the program below. How many times will it output “A”?
@@ -293,5 +293,5 @@ printf("A");
 
 A) 5 times
 B) 6 times
-C) 7 times
+C) 7 times ✅
 D) 8 times
