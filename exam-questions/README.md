@@ -1,8 +1,6 @@
-—————————————————————————————————————————
-2022-03-26:
-—————————————————————————————————————————
+# 2022-03-26:
 
-Which of the following properties should be ensured according to the critical section problem as defined in the course book?
+### Which of the following properties should be ensured according to the critical section problem as defined in the course book?
 
 - A) Mutual exclusion ✅
 - B) Lock-freedom
