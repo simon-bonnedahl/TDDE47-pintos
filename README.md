@@ -13,7 +13,7 @@ _Every individual lab have a separate branch_
 # Exam cheatsheet
 
 - _Book:_ https://www.download.booksfree.org/download-book/?dlm-dp-dl=24807
-- _Flashcards:_ https://quizlet.com/705419294/tddb68-flash-cards/ (Not provided by me)
+- _Exam Questions:_ https://github.com/simon-bonnedahl/TDDE47-pintos/tree/main/exam-questions
 
 ## Processes and threads
 
