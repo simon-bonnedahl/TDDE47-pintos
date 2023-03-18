@@ -4,10 +4,10 @@
 
 Which of the following properties should be ensured according to the critical section problem as defined in the course book?
 
-A) Mutual exclusion ✅
-B) Lock-freedom
-C) Progress ✅
-D) Availability
+- A) Mutual exclusion ✅
+- B) Lock-freedom
+- C) Progress ✅
+- D) Availability
 
 Which of the following statements are true about the PCB?
 
